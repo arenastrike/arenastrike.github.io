@@ -1148,33 +1148,65 @@ cursor: pointer;
       @keyframes spin { to { transform: rotate(360deg); } }
       
       /* ===== MOBILE SCALING ===== */
-      @media (max-width: 800px) {
-        .mp-body, .mp-lobby-grid, .mp-room-body { gap: 6px; }
-        .mp-head h1 { font-size: 18px !important; }
-        .mp-input { padding: 4px 8px; font-size: 12px; margin: 3px 0; }
-        .btn { padding: 6px 10px !important; font-size: 12px !important; margin-top: 4px !important; }
-        
-        /* فیکس باکس لاگین و دکمه‌ها */
-        #mpAuthBox { margin-top: 0; padding: 5px 0; width: 92%; }
-        #mpAuthBox h2 { font-size: 18px; margin-bottom: 6px; }
-        #mpAuthMsg { font-size: 11px; margin: 2px 0; min-height: 14px; }
-        #mpLoginBtn { width: calc(50% - 4px); margin-right: 6px; display: inline-block; }
-        #mpRegisterBtn { width: calc(50% - 4px); display: inline-block; }
+      /* ===== MODERN SETTINGS ===== */
+      #setList input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none; appearance: none;
+        width: 16px; height: 16px; border-radius: 50%;
+        background: linear-gradient(180deg, var(--amber), var(--ember));
+        cursor: pointer; box-shadow: 0 0 8px rgba(var(--er), 0.6);
+        border: 2px solid #fff;
+      }
+      #setList input[type="range"]::-moz-range-thumb {
+        width: 16px; height: 16px; border-radius: 50%;
+        background: linear-gradient(180deg, var(--amber), var(--ember));
+        cursor: pointer; box-shadow: 0 0 8px rgba(var(--er), 0.6);
+        border: 2px solid #fff;
+      }
+      #setList input[type="range"] { -webkit-appearance: none; appearance: none; height: 4px; background: rgba(255,255,255,0.15); border-radius: 2px; outline: none; }
+      #setList input[type="range"]::-webkit-slider-runnable-track { height: 4px; background: rgba(255,255,255,0.15); border-radius: 2px; }
 
+      @media (max-width: 800px) {
+        .mp-body, .mp-lobby-grid, .mp-room-body { gap: 4px; }
+        .mp-head h1 { font-size: 18px !important; }
+        .mp-input { padding: 5px 8px; font-size: 12px; margin: 3px 0; }
+        .btn { padding: 6px 10px !important; font-size: 12px !important; margin-top: 4px !important; }
+        #mpAuthBox { margin-top: 0; padding: 4px 0; width: 94%; }
+        #mpAuthBox h2 { font-size: 16px; margin-bottom: 4px; }
+        #mpAuthMsg { font-size: 11px; margin: 2px 0; min-height: 12px; }
         .mp-create-wrap, .mp-setup-body { flex-direction: column; overflow-y: auto; }
         .mp-modes-col { width: 100%; height: auto; flex-direction: row; flex-wrap: wrap; }
-        .mp-mode-card { flex: 1 1 45%; padding: 6px; }
-        .mp-cfg-col { padding: 6px; }
-        
-        /* Scale down HUD */
-        #vitals { transform: translateX(-50%) scale(0.65); bottom: 30px; }
-        #dock { transform: translateX(-50%) scale(0.6); bottom: 0; }
-        #score { transform: translateX(-50%) scale(0.75); top: 0; }
-        #mini { width: 80px; height: 80px; }
-        #feed { width: 180px; font-size: 10px; top: 30px; }
+        .mp-mode-card { flex: 1 1 45%; padding: 5px; }
+        .mp-cfg-col { padding: 5px; }
+
+        /* ✅ HUD کوچیک‌تر */
+        #vitals { transform: translateX(-50%) scale(0.55); bottom: 22px; }
+        #dock { transform: translateX(-50%) scale(0.5); bottom: -5px; }
+        #score { transform: translateX(-50%) scale(0.7); top: 0; }
+        #mini { width: 70px; height: 70px; }
+        #feed { width: 160px; font-size: 9px; top: 28px; }
+        #bndBadge { transform: scale(0.7); bottom: 130px; }
         .slot { width: 42px; height: 34px; }
-        .tbtn { transform: scale(0.78); }
-        #bFire { transform: scale(0.78); width: 75px; height: 75px; }
+        .tbtn { transform: scale(0.72); }
+        #bFire { transform: scale(0.72); width: 75px; height: 75px; }
+        #bAds { transform: scale(0.72); }
+        #bJump { transform: scale(0.72); }
+        #bReload { transform: scale(0.72); }
+        #bStance { transform: scale(0.72); }
+        #bNade { transform: scale(0.72); }
+        #bUse { transform: scale(0.72); }
+        #bNext { transform: scale(0.72); }
+        #bChute { transform: scale(0.72); }
+        #bPause, #bInv, #bMap { transform: scale(0.85); }
+
+        /* ✅ فیکس Layout Mode — همه دکمه‌ها معلوم بشن */
+        body.layout #bChute { opacity: 1 !important; display: grid !important; }
+        body.layout #bLeanL,
+        body.layout #bLeanR { display: grid !important; opacity: 1 !important; }
+        body.layout #bHeal { display: none !important; }
+        body.layout #bNext,
+        body.layout #bUse { display: grid !important; }
+        body.layout #dock { display: flex !important; opacity: 1 !important; }
+        body.layout .slot.nade { display: grid !important; }
       }
       #splash {
         align-items: center;
@@ -3263,7 +3295,7 @@ body.killcam #bndBadge {
         <button class="btn main" id="btnPlay">Play</button>
         <button class="btn" id="btnMultiplayer">Multiplayer</button>
         <button class="btn" id="btnSet">Settings</button>
-        <button class="btn" id="btnHelp">How to play</button>
+        <button class="btn" id="btnChangeKitMain">Change Loadout</button>
       </div>
       <div class="menu-foot">
         TEAM DEATHMATCH · TANKS · HELICOPTERS · SMART BOTS
@@ -3284,8 +3316,10 @@ body.killcam #bndBadge {
           <h2>LOGIN / REGISTER</h2>
           <input id="mpUsername" class="mp-input" placeholder="Username (3-16 chars)" maxlength="16" autocomplete="username" />
           <input id="mpPassword" class="mp-input" type="password" placeholder="Password (min 4)" autocomplete="current-password" />
-          <button class="btn main" id="mpLoginBtn">Login</button>
-          <button class="btn" id="mpRegisterBtn">Create Account</button>
+          <div style="display:flex; gap:8px; margin-top:8px;">
+            <button class="btn main" id="mpLoginBtn" style="flex:1; margin:0; padding:10px 4px; font-size:13px;">LOGIN</button>
+            <button class="btn" id="mpRegisterBtn" style="flex:1; margin:0; padding:10px 4px; font-size:13px;">REGISTER</button>
+          </div>
           <div id="mpAuthMsg" class="mp-msg"></div>
         </div>
 
@@ -3392,17 +3426,10 @@ body.killcam #bndBadge {
     </div>
 
     <div class="screen" id="setup">
-      <div class="set-head">
+      <div class="set-head" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
         <div id="setTitle">MATCH SETUP</div>
-        <div
-          style="
-            font: 600 14px var(--ui);
-            letter-spacing: 0.12em;
-            color: var(--dim);
-          "
-        >
-          CHOOSE A MODE
-        </div>
+        <div style="font: 600 14px var(--ui);letter-spacing: 0.12em;color: var(--dim);flex:1">CHOOSE A MODE</div>
+        <button class="mp-exit-btn" id="btnSetupExit">✕ EXIT</button>
       </div>
       <div class="set-body">
         <div id="modeList"></div>
@@ -3476,9 +3503,10 @@ body.killcam #bndBadge {
     </div>
 
     <div class="screen" id="deploy">
-      <div class="dep-head">
+      <div class="dep-head" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
         <div id="depTitle">SELECT YOUR KIT</div>
-        <div id="depSub"></div>
+        <div id="depSub" style="flex:1"></div>
+        <button class="mp-exit-btn" id="btnDeployExit" style="display:none">✕ EXIT</button>
       </div>
       <div class="dep-body">
         <div id="kitList"></div>
@@ -3610,7 +3638,7 @@ body.killcam #bndBadge {
         const $ = (id) => document.getElementById(id);
         const IS_TOUCH =
           "ontouchstart" in window || navigator.maxTouchPoints > 0;
-        const SERVER_URL = "https://arenastike-backend.fly.dev";
+        let SERVER_URL = localStorage.getItem("arena_server_url") || "https://arenastike-backend.fly.dev";
         const MULTIPLAYER_ENABLED = true;
         const PI = Math.PI;
         const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
@@ -3661,6 +3689,7 @@ body.killcam #bndBadge {
           touch: IS_TOUCH,
           autofs: true,
           dmgNums: true,
+          highFps: false,
           kit: 0,
         };
         let S = Object.assign({}, DEF);
@@ -4004,6 +4033,7 @@ sprint: "ControlLeft",
           { k: "touch", t: "check", l: "Touch controls" },
           { k: "autofs", t: "check", l: "Auto fullscreen" },
           { k: "dmgNums", t: "check", l: "Damage numbers" },
+          { k: "highFps", t: "check", l: "HIGH FPS MODE — disables all effects (no visual quality loss on models)" },
         ];
 
         /* ================= FULLSCREEN ================= */
@@ -4526,6 +4556,14 @@ sprint: "ControlLeft",
         function applyQuality() {
           const dpr = window.devicePixelRatio || 1,
             q = Q();
+          // ⚡ High FPS mode: turn off shadows
+          if (S.highFps) {
+            renderer.shadowMap.enabled = false;
+            if (sun) sun.castShadow = false;
+          } else if (ULTRA) {
+            renderer.shadowMap.enabled = true;
+            if (sun) sun.castShadow = true;
+          }
           renderer.setPixelRatio(
             Math.max(
               0.5,
@@ -4786,12 +4824,12 @@ sprint: "ControlLeft",
           scene.add(sun.target);
           sun.shadow.mapSize.set(1024, 1024);
           const sc2 = sun.shadow.camera;
-          sc2.left = -160;
-          sc2.right = 160;
-          sc2.top = 160;
-          sc2.bottom = -160;
+          sc2.left = -40;
+          sc2.right = 40;
+          sc2.top = 40;
+          sc2.bottom = -40;
           sc2.near = 1;
-          sc2.far = 420;
+          sc2.far = 200;
           sc2.updateProjectionMatrix();
           const v = document.createElement("div");
           v.style.cssText =
@@ -7967,6 +8005,7 @@ if (opt.vehicles) {
         }
         let partI = 0;
         function burst(p, n, type, spd, size, life, grav) {
+          if (S.highFps) return;
           if (!S.fx || (S.fx === 1 && type === "smoke")) return;
           n = Math.max(1, Math.round(n * Q().part * (S.fx === 1 ? 0.4 : 1)));
           for (let i = 0; i < n; i++) {
@@ -7996,7 +8035,7 @@ if (opt.vehicles) {
           EXP.push({ m, t: 0, r: 5, on: false });
         }
         function fireball(p, r) {
-          if (!S.fx) return;
+          if (S.highFps || !S.fx) return;
           const e = EXP.find((x) => !x.on) || EXP[0];
           e.on = true;
           e.t = 0;
@@ -8057,7 +8096,7 @@ if (opt.vehicles) {
         }
         let decI = 0;
         function decal(p, n, size) {
-          if (!S.decals || !S.fx) return;
+          if (S.highFps || !S.decals || !S.fx) return;
           const d = DEC[decI++ % DEC.length];
           d.position.copy(p).addScaledVector(n, 0.025);
           d.lookAt(p.x + n.x, p.y + n.y, p.z + n.z);
@@ -8100,7 +8139,7 @@ if (opt.vehicles) {
             });
         }
         function tracer(ax, ay, az, bx, by, bz, own) {
-          if (!S.tracers || !S.fx) return;
+          if (S.highFps || !S.tracers || !S.fx) return;
           let dx = bx - ax,
             dy = by - ay,
             dz = bz - az,
@@ -9170,12 +9209,9 @@ if (op.sc) {
         };
         const VM = new THREE.Group();
         camera.add(VM);
-        const vmLight = new THREE.PointLight(0xffeedd, 0.55, 1.6, 2);
-        vmLight.position.set(0.25, 0.35, -0.05);
-        camera.add(vmLight);
-        const vmRim = new THREE.PointLight(0x88aaff, 0.35, 1.2, 2);
-        vmRim.position.set(-0.3, 0.1, -0.4);
-        camera.add(vmRim);
+        // ⚡ Ambient سبک به جای ۲ PointLight سنگین
+        const vmAmbient = new THREE.AmbientLight(0xffeedd, 0.9);
+        camera.add(vmAmbient);
         const VMODELS = {},
           vmat = {};
         const DK = 0x2a2c31,
@@ -12609,9 +12645,12 @@ P.kick = Math.min(1.8, P.kick + w.vk * (1 + P.adsE * 1.2));
               origin: { x: _o.x, y: _o.y, z: _o.z },
               dir: { x: _d.x, y: _d.y, z: _d.z },
             });
-            // در آنلاین، دمیج رو سرور می‌ده، پس گرنید لوکال فقط visual
             GR[GR.length - 1]._noLocalDamage = true;
           }
+          // ✅ ریست نارنجک — کاربر برگرده به اسلحه
+          P.nadeOut = false;
+          P.nadeFireArmed = false;
+          showModel();
         }
         function updateGrenades(dt) {
           for (let i = GR.length - 1; i >= 0; i--) {
@@ -14604,6 +14643,13 @@ function teamSpawn(team) {
             return best;
           }
           shoot(dist, target) {
+            // ✅ چک تازه LOS — دیوار جلوی دید؟ شلیک نکن
+            const tx0 = target.x, ty0 = target.veh ? target.veh.y + 1 : 1.0, tz0 = target.z;
+            if (!losClear(this.x, 1.5, this.z, tx0, ty0, tz0)) {
+              this.target = null;
+              this.see = false;
+              return;
+            }
             const L = this.L,
               ax = this.x - Math.sin(this.yaw) * 0.6,
               az = this.z - Math.cos(this.yaw) * 0.6,
@@ -14798,7 +14844,7 @@ if (target.veh) this.lastFireT = time;
               mx = ix * fwd + -iz * this.strafeDir * 0.8;
               mz = iz * fwd + ix * this.strafeDir * 0.8;
               speed *= 0.85;
-              const combatRange = 60 + this.lv * 15;
+              const combatRange = Math.min(50, 30 + this.lv * 8);
               if (dist > combatRange) {
                 mx = ix;
                 mz = iz;
@@ -14862,12 +14908,14 @@ if (target.veh) this.lastFireT = time;
             else if (mx || mz) ty = Math.atan2(-mx, -mz);
             else ty = this.yaw;
             this.yaw += clamp(angDiff(ty, this.yaw), -L.turn * dt, L.turn * dt);
-            const isRunning = moved > 5 * dt; // سریع‌تر از قدم عادی
-            if (moved > 0) this.phase += dt * speed * (isRunning ? 3.6 : 2.4);
-            const amp = isRunning ? 0.95 : 0.6;
-            const sw = moved > 0 ? Math.sin(this.phase) * amp : 0;
-            m.legL.rotation.x = sw;
-            m.legR.rotation.x = -sw;
+            const isRunning = moved > 5 * dt;
+            if (!S.highFps) {
+              if (moved > 0) this.phase += dt * speed * (isRunning ? 3.6 : 2.4);
+              const amp = isRunning ? 0.95 : 0.6;
+              const sw = moved > 0 ? Math.sin(this.phase) * amp : 0;
+              m.legL.rotation.x = sw;
+              m.legR.rotation.x = -sw;
+            }
 
             // دست‌ها عقب-جلو
             if (m.armL && m.armL.userData.baseRot) {
@@ -15849,6 +15897,9 @@ function endFFA(winner) {
         }
 
         function updateHUD(dt) {
+          // ⚡ فقط هر ۳ فریم آپدیت کن
+          cache._hudF = (cache._hudF || 0) + 1;
+          if (cache._hudF % 3 !== 0) return;
           const v = P.veh;
           const vehKey = v ? (v.type === "tank" ? "tank" : "heli" + P.seat) : "none";
           if (cache.vehKey !== vehKey) {
@@ -17320,17 +17371,18 @@ else if (a === "tgt") edTarget = +v;
           renderKitList();
         });
         function buildDeploy(first) {
-          $("depTitle").textContent = first
-            ? "SELECT YOUR KIT"
-            : "CHANGE LOADOUT";
-          $("depSub").textContent = first
-            ? "CHOOSE YOUR LOADOUT AND DEPLOY"
-            : "PICK A LOADOUT";
+          $("btnDeployExit").style.display = deployFromMenu ? "inline-flex" : "none";
+          $("depTitle").textContent = deployFromMenu
+            ? "EDIT LOADOUT"
+            : first ? "SELECT YOUR KIT" : "CHANGE LOADOUT";
+          $("depSub").textContent = deployFromMenu
+            ? "EDIT AND SAVE YOUR LOADOUTS"
+            : first ? "CHOOSE YOUR LOADOUT AND DEPLOY" : "PICK A LOADOUT";
           selKit = clamp(selKit, 0, KITS.length - 1);
           armed = "";
           renderKitList();
           renderKit(false);
-          $("btnDeploy").textContent = first ? "DEPLOY" : "APPLY";
+          $("btnDeploy").textContent = deployFromMenu ? "SAVE & CLOSE" : (first ? "DEPLOY" : "APPLY");
         }
 
         /* ================= FLOW ================= */
@@ -17369,79 +17421,183 @@ else if (a === "tgt") edTarget = +v;
           showScreen("settings");
           setState("settings");
         }
+        const SET_SVG = {
+          palette: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r="0.5" fill="currentColor"/><circle cx="17.5" cy="10.5" r="0.5" fill="currentColor"/><circle cx="8.5" cy="7.5" r="0.5" fill="currentColor"/><circle cx="6.5" cy="12.5" r="0.5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>',
+          zap: '<svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" fill="currentColor"/></svg>',
+          gamepad: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="12" x2="10" y2="12"/><line x1="8" y1="10" x2="8" y2="14"/><line x1="15" y1="13" x2="15.01" y2="13"/><line x1="18" y1="11" x2="18.01" y2="11"/><rect x="2" y="6" width="20" height="12" rx="2"/></svg>',
+          volume: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="currentColor"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>',
+          monitor: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>',
+          alert: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+          reset: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>'
+        };
+        function setSvg(name, size) {
+          const s = SET_SVG[name] || '';
+          return `<span style="display:inline-block;width:${size||16}px;height:${size||16}px;vertical-align:middle;margin-right:6px;color:var(--amber)">${s}</span>`;
+        }
+
         function buildSettingsUI() {
           const box = $("setList");
           box.innerHTML = "";
+
           const inf = document.createElement("div");
           inf.className = "note";
-          inf.style.cssText = "margin:0 0 8px;word-break:break-word";
-          inf.textContent =
-            "GPU: " +
-            GPU +
-            (SOFT
-              ? " — SOFTWARE RENDERING. Enable hardware acceleration in Chrome."
-              : INTEG
-                ? " — integrated GPU: use Graphics = Low if FPS is low."
-                : " — OK");
+          inf.style.cssText = "margin:0 0 12px;word-break:break-word;padding:8px;background:rgba(0,0,0,.3);border-left:3px solid var(--ice);border-radius:3px";
+          inf.innerHTML = `<b style="color:var(--ice)">GPU:</b> ${GPU}${
+            SOFT ? ' <span style="color:#ff5a4a">— SOFTWARE RENDERING (slow)</span>' :
+            INTEG ? ' <span style="color:#ffc21a">— Integrated GPU</span>' :
+            ' <span style="color:#7ed321">— OK</span>'
+          }`;
           box.appendChild(inf);
-          SCHEMA.forEach((it) => {
-            const row = document.createElement("label");
-            row.className = "row";
-            const nm = document.createElement("span");
-            nm.textContent = it.l;
-            row.appendChild(nm);
-            if (it.t === "range") {
-              const f = (v) =>
-                it.pct
-                  ? Math.round(v * 100) + "%"
-                  : String(Math.round(v * 100) / 100);
-              const inp = document.createElement("input");
-              inp.type = "range";
-              inp.min = it.min;
-              inp.max = it.max;
-              inp.step = it.step;
-              inp.value = S[it.k];
-              const val = document.createElement("em");
-              val.textContent = f(S[it.k]);
-              inp.oninput = () => {
-                S[it.k] = parseFloat(inp.value);
+
+          const SECTIONS = [
+            { title: "APPEARANCE", icon: "palette", keys: ["theme"] },
+            { title: "GRAPHICS & PERFORMANCE", icon: "zap", keys: ["quality", "highFps", "dyn", "fx", "decals", "tracers", "blobs"] },
+            { title: "CONTROLS", icon: "gamepad", keys: ["sens", "adsSens", "scopeSens", "invertY", "touch"] },
+            { title: "AUDIO", icon: "volume", keys: ["master", "sfx", "music"] },
+            { title: "HUD", icon: "monitor", keys: ["mini", "fps", "dmgNums", "vib", "autofs"] },
+          ];
+
+          const findSchema = (k) => SCHEMA.find(s => s.k === k);
+
+          SECTIONS.forEach(sec => {
+            const secDiv = document.createElement("div");
+            secDiv.style.cssText = "margin:16px 0 6px";
+            secDiv.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:linear-gradient(90deg,rgba(var(--er),0.25),rgba(var(--er),0.03));border-left:4px solid var(--ember);border-radius:2px;margin-bottom:6px">
+              <span style="font:700 12px var(--ui);letter-spacing:.22em;color:var(--amber)">${setSvg(sec.icon)}${sec.title}</span>
+              <button style="all:unset;cursor:pointer;padding:3px 8px;font:700 10px var(--ui);letter-spacing:.14em;background:rgba(255,255,255,0.08);border-left:2px solid rgba(255,255,255,0.4);color:#aaa;border-radius:2px;display:flex;align-items:center;gap:3px" data-reset-section="${sec.title}">${setSvg("reset",10)}RESET</button>
+            </div>`;
+            box.appendChild(secDiv);
+
+            sec.keys.forEach(k => {
+              const it = findSchema(k);
+              if (!it) return;
+              const row = document.createElement("div");
+              row.style.cssText = "display:flex;align-items:center;gap:10px;padding:9px 12px;margin:3px 0;background:rgba(255,255,255,0.03);border-left:2px solid rgba(var(--er),0.4);border-radius:2px";
+              const nm = document.createElement("span");
+              nm.style.cssText = "flex:1;font:600 13px var(--ui);letter-spacing:.04em;color:#d8dde2";
+              nm.textContent = it.l;
+              row.appendChild(nm);
+              
+              if (it.t === "range") {
+                const f = (v) => it.pct ? Math.round(v * 100) + "%" : String(Math.round(v * 100) / 100);
+                const inp = document.createElement("input");
+                inp.type = "range";
+                inp.min = it.min; inp.max = it.max; inp.step = it.step;
+                inp.value = S[it.k];
+                inp.style.cssText = "flex:0 0 45%;accent-color:var(--ember)";
+                const val = document.createElement("em");
+                val.style.cssText = "width:52px;text-align:right;font-style:normal;color:var(--amber);font:700 12px var(--ui)";
                 val.textContent = f(S[it.k]);
-                changed(it.k);
-              };
-              row.appendChild(inp);
-              row.appendChild(val);
-            } else if (it.t === "select") {
-              const inp = document.createElement("select");
-              it.o.forEach(([v, t]) => {
-                const o = document.createElement("option");
-                o.value = v;
-                o.textContent = t;
-                inp.appendChild(o);
-              });
-              inp.value = String(S[it.k]);
-              inp.onchange = () => {
-                S[it.k] = Number(inp.value);
-                changed(it.k);
-              };
-              row.appendChild(inp);
-            } else {
-              const inp = document.createElement("input");
-              inp.type = "checkbox";
-              inp.checked = !!S[it.k];
-              inp.onchange = () => {
-                S[it.k] = inp.checked;
-                changed(it.k);
-              };
-              row.appendChild(inp);
-            }
-            box.appendChild(row);
+                inp.oninput = () => { S[it.k] = parseFloat(inp.value); val.textContent = f(S[it.k]); changed(it.k); };
+                row.appendChild(inp); row.appendChild(val);
+              } else if (it.t === "select") {
+                const wrap = document.createElement("div");
+                wrap.style.cssText = "position:relative;flex:0 0 auto";
+                const inp = document.createElement("select");
+                inp.style.cssText = "appearance:none;-webkit-appearance:none;background:linear-gradient(180deg,#161c22,#0a0d10);color:#fff;border:1px solid rgba(var(--er),0.4);padding:6px 32px 6px 12px;font:700 12px var(--ui);outline:none;cursor:pointer;border-radius:3px;min-width:180px";
+                it.o.forEach(([v, t]) => { const o = document.createElement("option"); o.value = v; o.textContent = t; inp.appendChild(o); });
+                inp.value = String(S[it.k]);
+                inp.onchange = () => { S[it.k] = Number(inp.value); changed(it.k); };
+                const arrow = document.createElement("div");
+                arrow.style.cssText = "position:absolute;right:10px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--amber);font-size:10px";
+                arrow.textContent = "▼";
+                wrap.appendChild(inp); wrap.appendChild(arrow); row.appendChild(wrap);
+              } else {
+                const lbl = document.createElement("label");
+                lbl.style.cssText = "position:relative;display:inline-block;width:44px;height:24px;cursor:pointer;flex:0 0 auto";
+                const inp = document.createElement("input");
+                inp.type = "checkbox"; inp.checked = !!S[it.k];
+                inp.style.cssText = "opacity:0;width:0;height:0";
+                const slider = document.createElement("span");
+                slider.style.cssText = `position:absolute;inset:0;background:${S[it.k]?'linear-gradient(90deg,var(--ember),var(--amber))':'rgba(255,255,255,0.15)'};border-radius:24px;transition:.2s`;
+                const knob = document.createElement("span");
+                knob.style.cssText = `position:absolute;top:3px;left:${S[it.k]?'23px':'3px'};width:18px;height:18px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.5)`;
+                slider.appendChild(knob);
+                inp.onchange = () => {
+                  S[it.k] = inp.checked;
+                  slider.style.background = inp.checked ? 'linear-gradient(90deg,var(--ember),var(--amber))' : 'rgba(255,255,255,0.15)';
+                  knob.style.left = inp.checked ? '23px' : '3px';
+                  changed(it.k);
+                };
+                lbl.appendChild(inp); lbl.appendChild(slider); row.appendChild(lbl);
+              }
+              box.appendChild(row);
+            });
           });
+
+          // ADVANCED SECTION
+          const advDiv = document.createElement("div");
+          advDiv.style.cssText = "margin:20px 0 6px";
+          advDiv.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:linear-gradient(90deg,rgba(255,90,74,0.25),rgba(255,90,74,0.03));border-left:4px solid #ff5a4a;border-radius:2px;margin-bottom:6px">
+            <span style="font:700 12px var(--ui);letter-spacing:.22em;color:#ff8a7a">${setSvg("alert")}ADVANCED</span>
+            <button style="all:unset;cursor:pointer;padding:3px 8px;font:700 10px var(--ui);letter-spacing:.14em;background:rgba(255,255,255,0.08);border-left:2px solid rgba(255,255,255,0.4);color:#aaa;border-radius:2px;display:flex;align-items:center;gap:3px" data-reset-section="ADVANCED">${setSvg("reset",10)}RESET</button>
+          </div>`;
+          box.appendChild(advDiv);
+
+          const urlRow = document.createElement("div");
+          urlRow.style.cssText = "padding:9px 12px;margin:3px 0;background:rgba(255,90,74,0.08);border-left:2px solid rgba(255,90,74,0.5);border-radius:2px";
+          urlRow.innerHTML = `
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+              <span style="flex:1;font:600 12px var(--ui);letter-spacing:.04em;color:#d8dde2;min-width:140px">Server Endpoint</span>
+              <input id="setServerUrl" type="text" value="${SERVER_URL}" style="flex:1;min-width:180px;background:rgba(0,0,0,.5);border:1px solid rgba(255,90,74,0.4);color:#fff;padding:6px 10px;font:600 12px var(--ui);outline:none;border-radius:3px">
+            </div>
+            <div style="margin-top:6px;font:600 11px var(--ui);color:#ff8a7a;letter-spacing:.04em">⚠️ Changing this will disconnect you. Reload page after saving.</div>
+          `;
+          box.appendChild(urlRow);
+
+          setTimeout(() => {
+            const inp = $("setServerUrl");
+            if (inp) {
+              inp.onchange = () => {
+                const v = inp.value.trim();
+                if (v && v.startsWith("http")) {
+                  localStorage.setItem("arena_server_url", v);
+                  if (confirm("Server URL changed. Reload page now?")) location.reload();
+                }
+              };
+            }
+          }, 10);
+
+          setTimeout(() => {
+            document.querySelectorAll("[data-reset-section]").forEach(btn => {
+              btn.onclick = () => {
+                const secName = btn.dataset.resetSection;
+                if (secName === "ADVANCED") {
+                  if (confirm("Reset server URL to default?")) {
+                    localStorage.removeItem("arena_server_url");
+                    location.reload();
+                  }
+                  return;
+                }
+                const sec = SECTIONS.find(s => s.title === secName);
+                if (!sec) return;
+                if (!confirm(`Reset "${secName}" to defaults?`)) return;
+                sec.keys.forEach(k => { if (DEF[k] !== undefined) S[k] = DEF[k]; });
+                saveS(); applyTheme(); applyQuality(); applyVol();
+                buildSettingsUI();
+                toast(`${secName} reset to defaults`);
+              };
+            });
+          }, 10);
         }
         function changed(k) {
           saveS();
           if (k === "master" || k === "sfx" || k === "music") applyVol();
           if (k === "theme") applyTheme();
           if (k === "fx" || k === "decals" || k === "tracers") fxPurge();
+          if (k === "highFps") {
+            applyQuality();
+            if (S.highFps) {
+              // Kill existing effects
+              PART.forEach(p => { p.life = 0; p.m.visible = false; });
+              EXP.forEach(e => { e.on = false; e.m.visible = false; });
+              DEC.forEach(d => d.visible = false);
+              TR.forEach(t => { t.t = 0; t.m.visible = false; });
+              toast("HIGH FPS MODE ON — shadows & effects disabled");
+            } else {
+              toast("HIGH FPS MODE OFF");
+            }
+          }
           if (k === "blobs") shadowM.visible = !!S.blobs;
           if (k === "quality") {
             resScale = 1;
@@ -17614,7 +17770,10 @@ function buildKeysUI() {
           bots.forEach((b) => { b.m.root.visible = false; });
           openDeploy(true);
         }
+
+        let deployFromMenu = false;
         function openDeploy(first, isRespawn = false) {
+          deployFromMenu = false; // reset flag
           setState("deploy");
           showScreen("deploy");
           if (document.pointerLockElement) {
@@ -17650,6 +17809,16 @@ function buildKeysUI() {
           if (timerEl) timerEl.remove();
           
           if (state === "deploy") {
+            // ✅ اگر از منو اومدیم، فقط ذخیره کن
+            if (deployFromMenu) {
+              deployFromMenu = false;
+              S.kit = selKit;
+              saveS();
+              setState("menu");
+              showScreen("menu");
+              toast("LOADOUT SAVED");
+              return;
+            }
             if (NET.mode === 'playing' && NET.socket) {
               const K = KITS[selKit] || KITS[0];
               NET.socket.emit('setLoadout', {
@@ -18864,17 +19033,10 @@ const sprint =
             !ov
           ) {
             if (P.nadeOut) {
-              // 🍳 فقط با کلیک تازه پرتاب می‌شه
+              // ✅ هر کلیک = پرتاب فوری
               if (inp.fireBuf > 0) {
-                if (!P.nadeFireArmed && inp.fire) {
-                  // کاربر دکمه رو نگه داشته — منتظر release بمون
-                } else {
-                  P.nadeFireArmed = true;
-                  playerFire();
-                  inp.fireBuf = 0;
-                }
-              } else if (inp.fire) {
-                P.nadeFireArmed = true;
+                playerFire();
+                inp.fireBuf = 0;
               }
             } else {
               const want = w.auto ? inp.fire : inp.fireBuf > 0;
@@ -19277,6 +19439,10 @@ if (matchT !== Infinity) {
           setState("setup");
           showScreen("setup");
         };
+        $("btnSetupExit").onclick = () => {
+          setState("menu");
+          showScreen("menu");
+        };
         $("btnMultiplayer").onclick = async () => {
           setState("menu");
           showScreen("mpLoading"); // ✅ نمایش صفحه لودینگ
@@ -19304,9 +19470,17 @@ if (matchT !== Infinity) {
           beginMatch();
         };
         $("btnSet").onclick = () => openSettings("menu");
-        $("btnHelp").onclick = () => {
-          showScreen("help");
-          setState("help");
+        $("btnDeployExit").onclick = () => {
+          deployFromMenu = false;
+          setState("menu");
+          showScreen("menu");
+        };
+        $("btnChangeKitMain").onclick = () => {
+          // Open deploy screen in edit mode (without starting a match)
+          deployFromMenu = true;
+          buildDeploy(false);
+          setState("deploy");
+          showScreen("deploy");
         };
         $("btnHelpBack").onclick = () => {
           showScreen("menu");
