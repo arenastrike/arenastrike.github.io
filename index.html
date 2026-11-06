@@ -1158,6 +1158,43 @@ cursor: pointer;
         opacity: 0.45;
         pointer-events: none;
       }
+      /* ===== SPINNER ===== */
+      .spinner {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(255,255,255,0.3);
+        border-radius: 50%;
+        border-top-color: #fff;
+        animation: spin 0.8s linear infinite;
+        vertical-align: middle;
+        margin-left: 8px;
+      }
+      @keyframes spin { to { transform: rotate(360deg); } }
+      
+      /* ===== MOBILE SCALING ===== */
+      @media (max-width: 800px) {
+        .mp-body, .mp-lobby-grid, .mp-room-body { gap: 8px; }
+        .mp-head h1 { font-size: 20px !important; }
+        .mp-input { padding: 6px 10px; font-size: 13px; }
+        .btn { padding: 8px 16px !important; font-size: 14px !important; }
+        #mpAuthBox { margin-top: 5px; }
+        #mpAuthBox h2 { font-size: 24px; margin-bottom: 10px; }
+        .mp-create-wrap, .mp-setup-body { flex-direction: column; overflow-y: auto; }
+        .mp-modes-col { width: 100%; height: auto; flex-direction: row; flex-wrap: wrap; }
+        .mp-mode-card { flex: 1 1 45%; padding: 8px; }
+        .mp-cfg-col { padding: 8px; }
+        
+        /* Scale down HUD */
+        #vitals { transform: translateX(-50%) scale(0.8); bottom: 45px; }
+        #dock { transform: translateX(-50%) scale(0.8); bottom: 5px; }
+        #score { transform: translateX(-50%) scale(0.85); top: 0; }
+        #mini { width: 90px; height: 90px; }
+        #feed { width: 200px; font-size: 11px; top: 35px; }
+        .slot { width: 46px; height: 38px; }
+        .tbtn { transform: scale(0.85); }
+        #bFire { transform: scale(0.85); width: 80px; height: 80px; }
+      }
       #splash {
         align-items: center;
         justify-content: center;
@@ -3221,6 +3258,15 @@ body.killcam #bndBadge {
       <div class="tbtn" id="bLeanR" style="display:none"></div>
     </div>
 
+    <!-- NEW: MP LOADING SCREEN -->
+    <div class="screen" id="mpLoading" style="background: rgba(0,0,0,0.9); z-index: 60; align-items: center; justify-content: center; flex-direction: column;">
+      <h2 style="font-family: var(--head); color: var(--amber); font-size: 28px;">CONNECTING TO SERVER...</h2>
+      <div class="spinner" style="width: 40px; height: 40px; border-width: 4px; margin: 20px 0;"></div>
+      <p id="mpLoadMsg" style="font-family: var(--ui); color: #aaa; letter-spacing: 0.1em;">Checking server status...</p>
+    </div>
+
+    <div class="screen show" id="splash">
+
     <div class="screen show" id="splash">
       <div class="logo">
         <small>FIRST-PERSON COMBAT</small>
@@ -3586,7 +3632,7 @@ body.killcam #bndBadge {
         const $ = (id) => document.getElementById(id);
         const IS_TOUCH =
           "ontouchstart" in window || navigator.maxTouchPoints > 0;
-        const SERVER_URL = 'https://arenastike.onrender.com';
+        const SERVER_URL = 'https://arenastike-backend.fly.dev;
         const MULTIPLAYER_ENABLED = true;
         const PI = Math.PI;
         const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
@@ -3643,12 +3689,15 @@ body.killcam #bndBadge {
         try {
           Object.assign(
             S,
-            JSON.parse(localStorage.getItem("arena_settings_v5") || "{}"),
+            JSON.parse(localStorage.getItem("arena_settings_v01") || "{}"),
           );
         } catch (e) {}
+        
+        // ✅ فورس کردن کیفیت پایین در موبایل تا لگ نداشته باشه
+        if (IS_TOUCH && S.quality > 1) S.quality = 1;
         function saveS() {
           try {
-            localStorage.setItem("arena_settings_v5", JSON.stringify(S));
+            localStorage.setItem("arena_settings_v01", JSON.stringify(S));
           } catch (e) {}
         }
 
@@ -4475,11 +4524,12 @@ sprint: "ControlLeft",
         sun.position.set(60, 100, 40);
         scene.add(sun);
         let resScale = 1;
+        // ✅ کاهش شدید تنظیمات گرافیکی برای موبایل جهت روانی بازی
         const QUAL = [
-          { dpr: 0.75, fn: 40, ff: 210, part: 0.5 },
-          { dpr: 1.25, fn: 60, ff: 280, part: 0.8 },
-          { dpr: 2, fn: 80, ff: 340, part: 1 },
-          { dpr: 2, fn: 100, ff: 400, part: 1.15 },
+          { dpr: 0.5, fn: 25, ff: 120, part: 0.2 }, // Low (for Mobile)
+          { dpr: 0.8, fn: 40, ff: 200, part: 0.5 }, // Mid
+          { dpr: 1.2, fn: 60, ff: 280, part: 0.8 }, // High
+          { dpr: 2, fn: 80, ff: 340, part: 1 },     // Super High
         ];
         const Q = () => QUAL[S.quality] || QUAL[1];
         function hToV(h) {
@@ -11101,6 +11151,8 @@ adsY: -sy + 0.01,
           jumpRep: false,
           sprint: false,
           chute: false,
+          up: false,     // For heli ascend mobile
+          down: false,   // For heli descend mobile
         };
 let lastWTap = 0,
   wDoubleSprint = false;
@@ -11811,15 +11863,23 @@ addEventListener("keyup", (e) => {
           inp.jumpRep = false;
         });
         bindBtn("bReload", () => startReload());
+        bindBtn("bHeal", () => useBandage()); // ✅ فیکس دکمه بانداژ در موبایل
         bindBtn("bAds", () => {
           if (P.zoom) P.zoom = false;
           else if (canAds()) P.zoom = true;
         });
-        bindBtn("bStance", () => toggleCrouch());
+        bindBtn("bStance", 
+          () => { toggleCrouch(); inp.down = true; }, 
+          () => { inp.down = false; }
+        );
         bindBtn("bNext", () => {
-          if (P.veh && P.veh.type === "tank") P.tankGun = P.tankGun ? 0 : 1;
+          if (P.veh) switchVehicleSeat(); // ✅ فیکس جابجایی صندلی تانک/هلی
           else switchWeapon(P.cur + 1);
         });
+        bindBtn("bJump", 
+          () => { inp.jump = true; inp.jumpRep = false; inp.up = true; }, 
+          () => { inp.up = false; }
+        );
         bindBtn("bNade", () => toggleGrenade());
         bindBtn(
           "bUse",
@@ -13813,9 +13873,9 @@ if (!v.alive) {
                 f /= l;
                 r /= l;
               }
-              const upKey = keys[KB.jump] || keys["Space"];
-              const dnKey =
-                keys[KB.sprint] || keys["ShiftLeft"] || keys[KB.crouch];
+              // ✅ اضافه کردن دکمه‌های تاچ برای بالا و پایین رفتن هلیکوپتر
+              const upKey = keys[KB.jump] || keys["Space"] || inp.up;
+              const dnKey = keys[KB.sprint] || keys["ShiftLeft"] || keys[KB.crouch] || inp.down;
               let thrustY = 0;
               if (upKey) thrustY = 1;
               else if (dnKey) thrustY = -1;
@@ -19206,11 +19266,27 @@ if (matchT !== Infinity) {
           setState("setup");
           showScreen("setup");
         };
-        $("btnMultiplayer").onclick = () => {
+        $("btnMultiplayer").onclick = async () => {
           setState("menu");
-          showScreen("mpMenu");
-          if (NET.token) connectMpSocket();
-          else showMpAuth();
+          showScreen("mpLoading"); // ✅ نمایش صفحه لودینگ
+          $("mpLoadMsg").textContent = "Pinging server...";
+          
+          try {
+            const res = await fetch(SERVER_URL + '/api/health', { signal: AbortSignal.timeout(5000) });
+            const data = await res.json();
+            if (data.ok) {
+              $("mpLoadMsg").textContent = "Checking authentication...";
+              if (NET.token) {
+                connectMpSocket(true); // Auto-login
+              } else {
+                showScreen("mpMenu");
+                showMpAuth();
+              }
+            }
+          } catch (e) {
+            $("mpLoadMsg").textContent = "Server offline or unreachable. Check connection.";
+            setTimeout(() => { showScreen("mpMenu"); showMpAuth(); }, 2500);
+          }
         };
         $("btnStartMatch").onclick = () => {
           saveMatch();
@@ -19709,9 +19785,10 @@ function renderMpSetup() {
   });
 }
 
-function connectMpSocket() {
+function connectMpSocket(isAutoLogin = false) {
   if (NET.socket) NET.socket.disconnect();
-  NET.socket = io(SERVER_URL, { auth: { token: NET.token } });
+  // ✅ مجبور کردن سوکت به استفاده از WebSocket تا ارور 400 و کندی رفع بشه
+  NET.socket = io(SERVER_URL, { auth: { token: NET.token }, transports: ['websocket'] });
   
   NET.socket.on('connect', () => {
     console.log('[MP] Connected');
@@ -19722,7 +19799,20 @@ function connectMpSocket() {
   NET.socket.on('authenticated', ({ username, userId }) => {
     NET.username = username;
     NET.userId = userId;
+    showScreen('mpMenu'); // ✅ رفتن به منو بعد از تایید
     showMpLobby();
+  });
+  NET.socket.on('connect_error', (e) => {
+    if (isAutoLogin) {
+      // اگر توکن منقضی شده بود، بفرستش صفحه لاگین
+      NET.token = null;
+      localStorage.removeItem('mp_token');
+      showScreen('mpMenu');
+      showMpAuth();
+      $mp('mpAuthMsg').textContent = 'Session expired, please login again.';
+    } else {
+      $mp('mpAuthMsg').textContent = 'Connection failed: ' + e.message;
+    }
   });
   NET.socket.on('roomList', renderMpRoomList);
   NET.socket.on('roomUpdated', (room) => {
@@ -20080,8 +20170,8 @@ function startMpGame(info) {
   const _rl = $mp('mpRoomList');
   if (_rl) _rl.innerHTML = '';
 
-  // ✅ فیکس مپ: دنیای لوکال رو با مپ انتخابی روم هماهنگ کن
-  const targetMap = info.settings.map || 'arena';
+  // ✅ فیکس قطعی مپ: مپ رو با اسم دقیق سرور بیلد کن
+  const targetMap = (info.settings && info.settings.map) ? info.settings.map : 'arena';
   if (currentMap !== targetMap) {
     rebuildWorld(targetMap);
   }
@@ -20817,9 +20907,19 @@ setInterval(() => {
 // Auth handlers
 if ($mp('mpLoginBtn')) {
   $mp('mpLoginBtn').onclick = async () => {
+    const btn = $mp('mpLoginBtn');
+    if (btn.classList.contains('loading')) return;
+    btn.classList.add('loading');
+    const orig = btn.textContent;
+    btn.innerHTML = orig + '<span class="spinner"></span>';
+    
     const u = $mp('mpUsername').value.trim();
     const p = $mp('mpPassword').value;
-    if (!u || !p) return $mp('mpAuthMsg').textContent = 'Fill both fields';
+    if (!u || !p) {
+      btn.classList.remove('loading');
+      btn.innerHTML = orig;
+      return $mp('mpAuthMsg').textContent = 'Fill both fields';
+    }
     try {
       const res = await fetch(SERVER_URL + '/api/login', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -20833,9 +20933,17 @@ if ($mp('mpLoginBtn')) {
       connectMpSocket();
     } catch (e) {
       $mp('mpAuthMsg').textContent = e.message;
+    } finally {
+      btn.classList.remove('loading');
+      btn.innerHTML = orig;
     }
   };
   $mp('mpRegisterBtn').onclick = async () => {
+    const btn = $mp('mpRegisterBtn');
+    if (btn.classList.contains('loading')) return;
+    btn.classList.add('loading');
+    const orig = btn.textContent;
+    btn.innerHTML = orig + '<span class="spinner"></span>';
     const u = $mp('mpUsername').value.trim();
     const p = $mp('mpPassword').value;
     if (!u || !p) return $mp('mpAuthMsg').textContent = 'Fill both fields';
@@ -20852,6 +20960,9 @@ if ($mp('mpLoginBtn')) {
       connectMpSocket();
     } catch (e) {
       $mp('mpAuthMsg').textContent = e.message;
+    } finally {
+      btn.classList.remove('loading');
+      btn.innerHTML = orig;
     }
   };
 
@@ -20914,7 +21025,7 @@ $mp('mpStartGameBtn').onclick = () => {
   if (!NET.currentRoom) return;
   
   // ✅ قبل از ارسال دیتا، مپ هاست رو با مپ روم هماهنگ کن
-  const targetMap = NET.currentRoom.settings.map || 'arena';
+  const targetMap = (NET.currentRoom.settings && NET.currentRoom.settings.map) ? NET.currentRoom.settings.map : 'arena';
   if (currentMap !== targetMap) {
     rebuildWorld(targetMap);
   }
