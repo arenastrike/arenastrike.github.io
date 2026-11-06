@@ -315,6 +315,16 @@ cursor: pointer;
       .slot.nade.out {
         opacity: 0.4;
       }
+
+      .slot.heal {
+        margin-left: 4px;
+        color: #7ed321;
+        border-color: rgba(126, 211, 33, 0.4);
+      }
+      .slot.heal:hover {
+        background: rgba(126, 211, 33, 0.15);
+      }
+
       #feed {
         position: fixed;
         right: calc(12px + var(--sr));
@@ -937,14 +947,7 @@ cursor: pointer;
         color: var(--amber);
         border-color: var(--amber);
       }
-      #bHeal {
-        right: calc(266px + var(--sr));
-        bottom: calc(186px + var(--sb));
-        width: 52px;
-        height: 52px;
-        color: #7ed321;
-        border-color: #7ed321;
-      }
+
       #bChute {
         right: calc(266px + var(--sr));
         bottom: calc(246px + var(--sb));
@@ -959,68 +962,40 @@ cursor: pointer;
         animation: pulse 1s infinite;
       }
 #bInv {
-  right: calc(54px + var(--sr));
-  top: 8px;
-  width: 36px;
-  height: 36px;
+  right: calc(44px + var(--sr));
+  top: 6px;
+  width: 30px;
+  height: 30px;
 }
 #bMap {
-  right: calc(98px + var(--sr));
-  top: 8px;
-  width: 36px;
-  height: 36px;
+  right: calc(78px + var(--sr));
+  top: 6px;
+  width: 30px;
+  height: 30px;
 }
-      #bPause {
-        right: calc(10px + var(--sr));
-        top: 8px;
-        width: 36px;
-        height: 36px;
-      }
-      @media (max-width: 760px) {
-        #bFire {
-          width: 84px;
-          height: 84px;
-        }
-        #bAds {
-          right: calc(122px + var(--sr));
-          width: 50px;
-          height: 50px;
-        }
-        #bStance {
-          right: calc(180px + var(--sr));
-          width: 48px;
-          height: 48px;
-        }
-        #bJump {
-          width: 50px;
-          height: 50px;
-          right: calc(40px + var(--sr));
-          bottom: calc(122px + var(--sb));
-        }
-        #bReload {
-          right: calc(104px + var(--sr));
-          bottom: calc(108px + var(--sb));
-          width: 48px;
-          height: 48px;
-        }
-        #bUse {
-          right: calc(166px + var(--sr));
-          bottom: calc(168px + var(--sb));
-        }
-        #bNext {
-          right: calc(226px + var(--sr));
-          bottom: calc(104px + var(--sb));
-        }
-        #bChute {
-          right: calc(226px + var(--sr));
-          bottom: calc(226px + var(--sb));
-          width: 46px;
-          height: 46px;
-        }
-        .slot {
-          width: 46px;
-          height: 38px;
-        }
+#bPause {
+  right: calc(10px + var(--sr));
+  top: 6px;
+  width: 30px;
+  height: 30px;
+}
+      @media (max-width: 800px) {
+        #vitals { transform: translateX(-50%) scale(0.75); bottom: 45px; width: 220px; }
+        #dock { transform: translateX(-50%) scale(0.75); bottom: 5px; }
+        .slot { width: 44px; height: 36px; }
+        .slot svg { width: 75%; height: 75%; }
+        
+        .tbtn { transform: scale(0.8); }
+        #bFire { transform: scale(0.8); width: 75px; height: 75px; right: 15px; bottom: 15px; }
+        #bAds { transform: scale(0.8); right: 100px; bottom: 30px; }
+        #bJump { transform: scale(0.8); right: 20px; bottom: 110px; }
+        #bReload { transform: scale(0.8); right: 90px; bottom: 100px; }
+        #bStance { transform: scale(0.8); right: 160px; bottom: 30px; }
+        #bNade { transform: scale(0.8); right: 160px; bottom: 100px; }
+        #bNext { transform: scale(0.8); right: 220px; bottom: 100px; }
+        
+        #feed { top: 45px; font-size: 11px; width: 220px; }
+        #bndBadge { transform: scale(0.8); right: 10px; bottom: 150px; }
       }
       #layoutBar {
         display: none;
@@ -3249,7 +3224,6 @@ body.killcam #bndBadge {
       <div class="tbtn" id="bNade"></div>
       <div class="tbtn" id="bNext"></div>
       <div class="tbtn" id="bUse"></div>
-      <div class="tbtn" id="bHeal"></div>
       <div class="tbtn" id="bChute"></div>
       <div class="tbtn" id="bPause"></div>
       <div class="tbtn" id="bInv"></div>
@@ -3264,8 +3238,6 @@ body.killcam #bndBadge {
       <div class="spinner" style="width: 40px; height: 40px; border-width: 4px; margin: 20px 0;"></div>
       <p id="mpLoadMsg" style="font-family: var(--ui); color: #aaa; letter-spacing: 0.1em;">Checking server status...</p>
     </div>
-
-    <div class="screen show" id="splash">
 
     <div class="screen show" id="splash">
       <div class="logo">
@@ -3409,7 +3381,7 @@ body.killcam #bndBadge {
       <input id="mpGameChatInput" style="width:100%;padding:10px;background:rgba(8,11,14,.95);border:2px solid var(--amber);color:#fff;font:600 16px var(--ui);letter-spacing:.05em;outline:none" placeholder="Press Enter to send, Esc to cancel" maxlength="120" />
     </div>
     <!-- Ping display -->
-    <div id="mpPing" style="display:none;position:fixed;right:calc(20px + var(--sr));top:50px;background:rgba(8,11,14,.85);padding:4px 10px;border-left:3px solid var(--ice);font:700 12px var(--ui);color:var(--ice);z-index:11">
+    <div id="mpPing" style="display:none;position:fixed;left:50%;top:35px;transform:translateX(-50%);background:rgba(8,11,14,.85);padding:4px 10px;border-left:3px solid var(--ice);font:700 12px var(--ui);color:var(--ice);z-index:11">
       PING: <b id="mpPingVal">--</b> ms
     </div>
 
@@ -3692,6 +3664,9 @@ body.killcam #bndBadge {
             JSON.parse(localStorage.getItem("arena_settings_v01") || "{}"),
           );
         } catch (e) {}
+
+        if (IS_TOUCH && S.quality > 1) S.quality = 1;
+
         
         // ✅ فورس کردن کیفیت پایین در موبایل تا لگ نداشته باشه
         if (IS_TOUCH && S.quality > 1) S.quality = 1;
@@ -4526,11 +4501,13 @@ sprint: "ControlLeft",
         let resScale = 1;
         // ✅ کاهش شدید تنظیمات گرافیکی برای موبایل جهت روانی بازی
         const QUAL = [
-          { dpr: 0.5, fn: 25, ff: 120, part: 0.2 }, // Low (for Mobile)
-          { dpr: 0.8, fn: 40, ff: 200, part: 0.5 }, // Mid
-          { dpr: 1.2, fn: 60, ff: 280, part: 0.8 }, // High
-          { dpr: 2, fn: 80, ff: 340, part: 1 },     // Super High
+          { dpr: 0.5, fn: 25, ff: 120, part: 0.2 }, // برای موبایل (سریع)
+          { dpr: 0.8, fn: 40, ff: 200, part: 0.5 }, // متوسط
+          { dpr: 1.2, fn: 60, ff: 280, part: 0.8 }, // بالا
+          { dpr: 2, fn: 80, ff: 340, part: 1 },     // خیلی بالا
         ];
+
+
         const Q = () => QUAL[S.quality] || QUAL[1];
         function hToV(h) {
           return (
@@ -11863,7 +11840,6 @@ addEventListener("keyup", (e) => {
           inp.jumpRep = false;
         });
         bindBtn("bReload", () => startReload());
-        bindBtn("bHeal", () => useBandage()); // ✅ فیکس دکمه بانداژ در موبایل
         bindBtn("bAds", () => {
           if (P.zoom) P.zoom = false;
           else if (canAds()) P.zoom = true;
@@ -11925,7 +11901,6 @@ bindBtn("bMap", () => openOv("ovMap"));
 $("bInv").innerHTML = '<svg viewBox="0 0 24 24"><path d="M3 7h18v13H3z"/><path d="M3 7l3-3h12l3 3M9 12h6"/></svg>';
 $("bMap").innerHTML = '<svg viewBox="0 0 24 24"><path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z"/><path d="M9 3v15M15 6v15"/></svg>';
         $("bNade").innerHTML = IC.nade;
-        $("bHeal").innerHTML = IC.bandage;
         $("bLeanL").innerHTML = '<svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6" stroke-width="3"/></svg>';
         $("bLeanR").innerHTML = '<svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6" stroke-width="3"/></svg>';
         $("bChute").innerHTML = IC.chute;
@@ -12245,9 +12220,21 @@ bLeanR: "LEAN RIGHT",
             if (state === "playing") toggleGrenade();
           });
           d.appendChild(n);
+          
+          // ✅ اضافه کردن دکمه بانداژ (H) دقیقا کنار داک
+          const heal = document.createElement("button");
+          heal.className = "slot heal";
+          heal.id = "slHeal";
+          heal.innerHTML = `<em>H</em>${IC.bandage}<b style="color:#7ed321;position:absolute;bottom:0;right:6px;font:700 13px var(--ui)">${P.bandages | 0}</b>`;
+          bindTap(heal, () => {
+            if (state === "playing") useBandage();
+          });
+          d.appendChild(heal);
+
           cache.dockCur = -1;
           cache.nCount = -1;
           cache.nadeIcon = "";
+          cache.bndN2 = -1;
         }
 
         /* ================= PLAYER COMBAT ================= */
@@ -15923,6 +15910,11 @@ function endFFA(winner) {
           if (cache.bndN !== P.bandages) {
             cache.bndN = P.bandages;
             $("bndNum").textContent = P.bandages;
+            const slHeal = $("slHeal");
+            if (slHeal) {
+              const bTag = slHeal.querySelector('b');
+              if (bTag) bTag.textContent = P.bandages;
+            }
           }
 const bp = P.healing ? clamp(1 - P.healT / HEAL_TIME, 0, 1) * 100 : 0;
 if (Math.abs((cache.bp || 0) - bp) > 0.5) {
@@ -17359,6 +17351,7 @@ else if (a === "tgt") edTarget = +v;
           "over",
           "keys",
           "mpMenu",
+          "mpLoading",
         ];
         function showScreen(id) {
           SCREENS.forEach((n) => $(n).classList.toggle("show", n === id));
@@ -18682,36 +18675,48 @@ function updatePlayer(dt) {
           P.leanA = lerp(P.leanA, P.lean, Math.min(1, dt * 14));
 
           // 🛝 Slide state
+          // 🛝 Slide state
           if (P.sliding) {
-            P.slideT -= dt;
-            P.vel.x *= Math.pow(0.15, dt); // ✅ کاهش اصطکاک برای اسلاید نرم‌تر
-            P.vel.z *= Math.pow(0.15, dt);
-            if (P.slideT <= 0 || Math.hypot(P.vel.x, P.vel.z) < 2) {
+            // ✅ فیکس: اگر در حین اسلاید پرش زد، اسلاید لغو شود و پرش انجام شود
+            if (inp.jump) {
               P.sliding = false;
-              P.stance = 1;
+              P.stance = 0;
+              P.vy = 7.2;
+              P.onGround = false;
+              inp.jump = false;
+              sfx("jump");
+              // از بلاک اسلاید خارج می‌شویم تا فیزیک عادی پرش اجرا شود
+            } else {
+              P.slideT -= dt;
+              P.vel.x *= Math.pow(0.15, dt); // ✅ کاهش اصطکاک برای اسلاید نرم‌تر
+              P.vel.z *= Math.pow(0.15, dt);
+              if (P.slideT <= 0 || Math.hypot(P.vel.x, P.vel.z) < 2) {
+                P.sliding = false;
+                P.stance = 1;
+              }
+              // اسلاید: input حرکت رو نادیده بگیر
+              P.pos.x += P.vel.x * dt;
+              P.pos.z += P.vel.z * dt;
+              pushOut(P.pos, 0.4, P.pos.y, BODYH[1]);
+              P.pos.x = clamp(P.pos.x, WMIN, WMAX);
+              P.pos.z = clamp(P.pos.z, WMIN, WMAX);
+              P.vy -= 20 * dt;
+              P.pos.y += P.vy * dt;
+              const g = groundAt(P.pos.x, P.pos.z, 0.38, P.pos.y);
+              if (P.pos.y <= g) {
+                P.pos.y = g;
+                P.vy = 0;
+                P.onGround = true;
+              }
+              P.sprinting = false;
+              // fire در حین slide ممنوع
+              if (inp.fire) inp.fire = false;
+              P.yawVel = 0;
+              P.pitchVel = 0;
+              P.lastYaw = P.yaw;
+              P.lastPitch = P.pitch;
+              return; // ✅ خروج از تابع
             }
-            // اسلاید: input حرکت رو نادیده بگیر
-            P.pos.x += P.vel.x * dt;
-            P.pos.z += P.vel.z * dt;
-            pushOut(P.pos, 0.4, P.pos.y, BODYH[1]);
-            P.pos.x = clamp(P.pos.x, WMIN, WMAX);
-            P.pos.z = clamp(P.pos.z, WMIN, WMAX);
-            P.vy -= 20 * dt;
-            P.pos.y += P.vy * dt;
-            const g = groundAt(P.pos.x, P.pos.z, 0.38, P.pos.y);
-            if (P.pos.y <= g) {
-              P.pos.y = g;
-              P.vy = 0;
-              P.onGround = true;
-            }
-            P.sprinting = false;
-            // fire در حین slide ممنوع
-            if (inp.fire) inp.fire = false;
-            P.yawVel = 0;
-            P.pitchVel = 0;
-            P.lastYaw = P.yaw;
-            P.lastPitch = P.pitch;
-            return;
           }
 
           if (P.mantle) {
@@ -19515,25 +19520,26 @@ function showMpRoom(room) {
 
 function renderMpPlayers() {
   const room = NET.currentRoom;
-  if (!room) return;
-  const me = room.players.find(p => p.userId === NET.userId);
+  if (!room || !room.players || !Array.isArray(room.players)) return;
+  
+  const me = room.players.find(p => String(p.userId) === String(NET.userId));
   const isOwner = me && me.isOwner;
   const isAdmin = me && me.isAdmin;
   const col = $mp('mpTeamsCol');
   col.innerHTML = '';
 
   if (room.mode === 'tdm') {
-    // Two team blocks
     for (const team of [0, 1]) {
       const block = document.createElement('div');
       block.className = 'mp-team-block' + (team === 1 ? ' red' : '');
       block.dataset.team = String(team);
       const teamName = team === 0 ? 'BLUE TEAM' : 'RED TEAM';
-      const count = room.players.filter(p => p.team === team).length;
-      block.innerHTML = `<div class="mp-team-title"><span>${teamName}</span><b>${count}</b></div>
+      const list = room.players.filter(p => p.team === team);
+      
+      block.innerHTML = `<div class="mp-team-title"><span>${teamName}</span><b>${list.length}</b></div>
         <div class="mp-team-players"></div>`;
       const playersBox = block.querySelector('.mp-team-players');
-      const list = room.players.filter(p => p.team === team);
+      
       if (list.length === 0) {
         const empty = document.createElement('div');
         empty.style.cssText = 'padding:6px;font:600 12px var(--ui);color:var(--dim);font-style:italic;letter-spacing:.1em';
@@ -19543,36 +19549,21 @@ function renderMpPlayers() {
       for (const p of list) {
         playersBox.appendChild(buildPlayerRow(p, isOwner, isAdmin));
       }
-      if (isOwner || isAdmin) {
-        block.addEventListener('dragover', e => {
-          e.preventDefault();
-          block.classList.add('drop-hover');
-        });
-        block.addEventListener('dragleave', () => block.classList.remove('drop-hover'));
-        block.addEventListener('drop', e => {
-          e.preventDefault();
-          block.classList.remove('drop-hover');
-          const uid = parseInt(e.dataTransfer.getData('text/plain'));
-          if (!uid) return;
-          NET.socket.emit('setTeam', { userId: uid, team });
-        });
-      }
       col.appendChild(block);
     }
   } else {
-    // FFA single list
     const block = document.createElement('div');
     block.className = 'mp-team-block';
     block.innerHTML = `<div class="mp-team-title"><span>PLAYERS</span><b>${room.players.length}</b></div>
       <div class="mp-team-players"></div>`;
     const playersBox = block.querySelector('.mp-team-players');
-        for (const p of room.players) playersBox.appendChild(buildPlayerRow(p, isOwner, isAdmin));
+    for (const p of room.players) playersBox.appendChild(buildPlayerRow(p, isOwner, isAdmin));
     col.appendChild(block);
   }
 }
 
 function buildPlayerRow(p, isOwner, isAdmin) {
-  const isMe = p.userId === NET.userId;
+  const isMe = String(p.userId) === String(NET.userId);
   // ✅ اجازه جابجایی: اونر هرکسی، ادمین هرکسی جز اونر، ممبر هیچکس (حتی خودش)
   const canModify = (isOwner && !p.isOwner) || (isAdmin && !p.isOwner) || (isMe && (isOwner || isAdmin));
   const canModifyAdmin = isOwner && !isMe && !p.isOwner;
@@ -20991,6 +20982,12 @@ $mp('mpNextCreate').onclick = () => {
 };
 $mp('mpBackCreate').onclick = showMpCreate;
 $mp('mpConfirmCreate').onclick = () => {
+  const btn = $mp('mpConfirmCreate');
+  if (btn.classList.contains('loading')) return;
+  btn.classList.add('loading');
+  const orig = btn.innerHTML;
+  btn.innerHTML = 'CREATING... <span class="spinner"></span>';
+
   const cfg = NET.pendingConfig;
   const config = {
     name: cfg.name,
@@ -21007,6 +21004,8 @@ $mp('mpConfirmCreate').onclick = () => {
     },
   };
   NET.socket.emit('createRoom', config, (res) => {
+    btn.classList.remove('loading');
+    btn.innerHTML = orig;
     if (res.error) return toast(res.error);
     NET.pendingConfig = null;
     showMpRoom(res.room);
