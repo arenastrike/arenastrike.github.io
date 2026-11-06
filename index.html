@@ -498,24 +498,27 @@ cursor: pointer;
         position: fixed;
         left: 50%;
         top: 50%;
-        width: 270px;
-        height: 270px;
-        margin: -135px 0 0 -135px;
+        width: 320px;
+        height: 320px;
+        margin: -160px 0 0 -160px;
         opacity: 0;
+        z-index: 14;
       }
       #dmgdir i {
         position: absolute;
         left: 50%;
         top: 0;
-        margin-left: -28px;
-        width: 56px;
-        height: 18px;
+        margin-left: -45px;
+        width: 90px;
+        height: 26px;
         border-radius: 50%;
         background: radial-gradient(
           ellipse,
-          rgba(255, 40, 40, 0.95),
-          rgba(255, 40, 40, 0) 70%
+          rgba(255, 20, 20, 1) 0%,
+          rgba(255, 60, 40, 0.9) 40%,
+          rgba(255, 0, 0, 0) 75%
         );
+        box-shadow: 0 0 20px 4px rgba(255, 30, 30, 0.8), inset 0 0 12px rgba(255, 100, 100, 0.6);
       }
       #scope {
         display: none;
@@ -2396,12 +2399,12 @@ body.hscoped #cross { display:none; }
 .dmgnum.head { color: #ff8a5a; font-size: 26px; }
 .dmgnum.kill { color: #7ed321; font-size: 30px; }
 #bndBadge {
+  display: none !important;
   position: fixed;
   right: calc(20px + var(--sr));
   bottom: calc(160px + var(--sb));
   left: auto;
   top: auto;
-  display: flex;
   align-items: center;
   gap: 6px;
   padding: 4px 10px;
@@ -3450,7 +3453,7 @@ body.killcam #bndBadge {
         </p>
         <button class="btn" id="btnLayout">Customize touch controls</button>
         <button class="btn" id="btnApplyGfx">
-          Apply graphics &amp; reload page
+          Apply &amp; reload game
         </button>
         <button class="btn main" id="btnSetBack">Back</button>
       </div>
@@ -3715,8 +3718,8 @@ body.killcam #bndBadge {
         const MDEF = {
           mode: "tdm",
           map: "arena",
-          allies: 4,
-          enemies: 5,
+          allies: 3,
+          enemies: 3,
           level: 2,
           ff: false,
           score: 200,
@@ -4400,7 +4403,13 @@ sprint: "ControlLeft",
             T("sawtooth", 320, 60, 0.4, 0.5, p);
             T("sine", 200, 40, 0.5, 0.35, p);
           },
-          bot: (p) => N(0.1, 2700, 720, 0.5, p),
+          bot: (p) => {
+            N(0.008, 9000, 7000, 0.55, p, "highpass", 0.7);
+            N(0.13, 3000, 500, 1.1, p);
+            T("sawtooth", 150, 45, 0.14, 0.6, p);
+            T("sine", 100, 38, 0.2, 0.5, p);
+            N(0.4, 1100, 180, 0.4, p, "lowpass", 0.5);
+          },
           jump: () => N(0.07, 720, 320, 0.15),
           bandage: () => {
             N(0.5, 950, 320, 0.35, null, "bandpass", 0.9);
@@ -11315,6 +11324,12 @@ let lastWTap = 0,
         function damagePlayer(dmg, src, isBullet) {
           if (!P.alive) return;
           
+          // ✅ برگشت‌داده‌شده: ثبت موقعیت تیرانداز برای نشانگر قرمز جهت
+          if (src && typeof src.x === "number" && typeof src.z === "number") {
+            P.hitSrc = { x: src.x, z: src.z };
+                        P.hitT = 2.5;
+          }
+          
           if (P.veh) {
             damageVeh(P.veh, dmg * (isBullet ? 0.35 : 1), src);
             P.shake = Math.max(P.shake, 0.2);
@@ -12435,10 +12450,14 @@ if (h.type === "unit") {
             v = w.rv * m * rnd(0.8, 1.2);
           P.pitch = clamp(P.pitch + v, -1.45, 1.45);
           P.yaw += w.rh * m * rnd(-1, 1);
-P.rcP += v;
-P.kick = Math.min(1.8, P.kick + w.vk * (1 + P.adsE * 1.2));
+          P.rcP += v;
           P.bloom = Math.min(1, P.bloom + (w.bloom || 0));
-          P.shake = Math.max(P.shake, w.vk * 0.12);
+          
+          // ⚡ High FPS: Disable weapon kick & camera shake
+          if (!S.highFps) {
+            P.kick = Math.min(1.8, P.kick + w.vk * (1 + P.adsE * 1.2));
+            P.shake = Math.max(P.shake, w.vk * 0.12);
+          }
         }
         function playerFire() {
           if (P.chute) return;
@@ -12652,6 +12671,42 @@ P.kick = Math.min(1.8, P.kick + w.vk * (1 + P.adsE * 1.2));
           P.nadeFireArmed = false;
           showModel();
         }
+
+        function toggleGrenade() {
+          // اگه نارنجک در دسته، بذارش کنار
+          if (P.nadeOut) {
+            P.nadeOut = false;
+            P.nadeCookT = 0;
+            P.nadeFireArmed = false;
+            showModel();
+            return;
+          }
+
+          // ✅ ریست زوم (مهم!)
+          P.zoom = false;
+
+          // اگه نارنجک فعلی تموم شده، برو سراغ یکی دیگه
+          if (!P.nades[P.nadeType] || P.nades[P.nadeType] <= 0) {
+            const avail = Object.keys(P.nades).find(t => P.nades[t] > 0);
+            if (avail) {
+              P.nadeType = avail;
+            } else {
+              toast("NO GRENADES LEFT");
+              return;
+            }
+          }
+
+          P.nadeOut = true;
+          P.nadeCookT = 0;
+          P.nadeFireArmed = false;
+
+          // ✅ اطمینان از visible بودن مدل اسلحه و نارنجک
+          VM.visible = true;
+          showModel();
+
+          toast(P.nadeType.toUpperCase() + " READY — CLICK TO THROW");
+        }
+
         function updateGrenades(dt) {
           for (let i = GR.length - 1; i >= 0; i--) {
             const g = GR[i];
@@ -13769,23 +13824,23 @@ if (!v.alive) {
               }
               v.cool -= dt;
               v.mgCool -= dt;
-              v.recoil = Math.max(0, v.recoil - dt * 3);
-              v.mesh.gun.position.z = -1.25 + v.recoil * 0.5;
-
-              // 🚀 انیمیشن چرخش چرخ‌ها و شنی‌ها
-              if (v.mesh.wheels) {
-                // سرعت چرخش بر اساس سرعت حرکت تانک
-                const wRot = v.speed * dt * 2.5; 
-                for (const w of v.mesh.wheels) {
-                  // چرخوندن دور محور X (چون چرخ‌ها به پهلو خوابیده‌ن)
-                  w.rotation.x -= wRot; 
-                }
-                // حرکت بافت شنی (Track Scrolling)
-                if (v.mesh.treadMats) {
-                  for (const tm of v.mesh.treadMats) {
-                    tm.map.offset.y -= wRot * 0.5;
+              
+              if (!S.highFps) {
+                v.recoil = Math.max(0, v.recoil - dt * 3);
+                v.mesh.gun.position.z = -1.25 + v.recoil * 0.5;
+                if (v.mesh.wheels) {
+                  const wRot = v.speed * dt * 2.5; 
+                  for (const w of v.mesh.wheels) {
+                    w.rotation.x -= wRot; 
+                  }
+                  if (v.mesh.treadMats) {
+                    for (const tm of v.mesh.treadMats) {
+                      tm.map.offset.y -= wRot * 0.5;
+                    }
                   }
                 }
+              } else {
+                v.mesh.gun.position.z = -1.25;
               }
             } else {
               const gvNow = groundAt(v.x, v.z, 1.4, 999);
@@ -13857,7 +13912,9 @@ if (!v.alive) {
               }
               v.g.position.set(v.x, v.y, v.z);
               v.g.rotation.set(v.pitch, v.yaw, v.roll, "YXZ");
-              v.rotorT += dt * (v.seats[0].o ? 34 : 0);
+              if (!S.highFps) {
+                v.rotorT += dt * (v.seats[0].o ? 34 : 0);
+              }
               if (v.mesh.ring) {
                 const occ = v.occupants().length;
                 const isMine = v === P.veh;
@@ -14699,7 +14756,7 @@ for (const v of vehicles) {
               finalHit = false;
             } else {
               // شانس اصابت بات (کمی کاهش یافت)
-              let acc = L.acc * clamp(1.1 - dist / 70, 0.08, 1) * 0.75; 
+let acc = L.acc * clamp(1.0 - dist / 40, 0.03, 1) * 0.45;
               if (target === P) acc *= 1 - clamp(Math.hypot(P.vel.x, P.vel.z) / 14, 0, 0.3);
               
               finalHit = Math.random() < acc;
@@ -14713,9 +14770,14 @@ for (const v of vehicles) {
               }
             }
             
-            tracer(ax, ay, az, ex, ey, ez);
-            sfx("bot", { x: this.x, z: this.z });
-            if (h.type === "world" && Math.random() < 0.3) burst(new THREE.Vector3(ex, ey, ez), 2, "dust", 2, 0.06, 0.3);
+          tracer(ax, ay, az, ex, ey, ez);
+          // ✅ فلش دهانه اسلحه بات — ببینی از کجا تیر می‌زنه
+          if (!S.highFps) {
+            burst(new THREE.Vector3(ax, ay, az), 3, "fire", 3, 0.15, 0.15, 0);
+            burst(new THREE.Vector3(ax, ay, az), 2, "spark", 4, 0.08, 0.2, 0);
+          }
+          sfx("bot", { x: this.x, z: this.z });
+          if (h.type === "world" && Math.random() < 0.3) burst(new THREE.Vector3(ex, ey, ez), 2, "dust", 2, 0.06, 0.3);
 
 if (finalHit) {
   if (finalTarget === P) {
@@ -14807,10 +14869,10 @@ if (target.veh) this.lastFireT = time;
                 const abandonRoll = isP && hadOther && Math.random() < 0.5;
 
                 if (!abandonRoll) {
-                  if (!this.aware) {
-                    this.aware = true;
-                    this.react = L.react * (isP ? 0.5 : 1);
-                  }
+if (!this.aware) {
+  this.aware = true;
+  this.react = L.react * (isP ? 1.5 : 1);
+}
                   this.target = t;
                   this.lastSeenT = 0;
                 }
@@ -14844,7 +14906,7 @@ if (target.veh) this.lastFireT = time;
               mx = ix * fwd + -iz * this.strafeDir * 0.8;
               mz = iz * fwd + ix * this.strafeDir * 0.8;
               speed *= 0.85;
-              const combatRange = Math.min(50, 30 + this.lv * 8);
+const combatRange = Math.min(35, 20 + this.lv * 4);
               if (dist > combatRange) {
                 mx = ix;
                 mz = iz;
@@ -14909,6 +14971,15 @@ if (target.veh) this.lastFireT = time;
             else ty = this.yaw;
             this.yaw += clamp(angDiff(ty, this.yaw), -L.turn * dt, L.turn * dt);
             const isRunning = moved > 5 * dt;
+            if (moved > 0) this.phase += dt * speed * (isRunning ? 3.6 : 2.4);
+            // ✅ صدای قدم بات‌ها — بشنوی از کجا میان
+            if (moved > 0) {
+              this._stepD = (this._stepD || 0) + moved;
+              if (this._stepD > (isRunning ? 2.6 : 2.1)) {
+                this._stepD = 0;
+                sfx("step", { x: this.x, z: this.z });
+              }
+            }
             if (!S.highFps) {
               if (moved > 0) this.phase += dt * speed * (isRunning ? 3.6 : 2.4);
               const amp = isRunning ? 0.95 : 0.6;
@@ -17435,6 +17506,79 @@ else if (a === "tgt") edTarget = +v;
           return `<span style="display:inline-block;width:${size||16}px;height:${size||16}px;vertical-align:middle;margin-right:6px;color:var(--amber)">${s}</span>`;
         }
 
+        // ✅ دراپ‌داون کاستوم با استایل سفارشی
+        function createCustomDropdown(options, currentValue, onChange) {
+          const wrap = document.createElement("div");
+          wrap.style.cssText = "position:relative;flex:0 0 auto;min-width:180px";
+
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.style.cssText = "width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;background:linear-gradient(180deg,#161c22,#0a0d10);color:#fff;border:1px solid rgba(var(--er),0.5);padding:7px 12px;font:700 12px var(--ui);letter-spacing:.06em;cursor:pointer;border-radius:3px;text-align:left;box-shadow:inset 0 1px 0 rgba(255,255,255,0.05)";
+          
+          const label = document.createElement("span");
+          label.style.cssText = "flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis";
+          const _findLabel = (v) => (options.find(o => String(o.v) === String(v)) || options[0] || {}).t || "";
+          label.textContent = _findLabel(currentValue);
+          
+          const arrow = document.createElement("span");
+          arrow.style.cssText = "color:var(--amber);font-size:10px;transition:transform .2s;flex:none";
+          arrow.innerHTML = '<svg viewBox="0 0 24 24" width="10" height="10" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg>';
+          
+          btn.appendChild(label);
+          btn.appendChild(arrow);
+
+          const menu = document.createElement("div");
+          menu.style.cssText = "position:absolute;top:calc(100% + 4px);left:0;right:0;background:linear-gradient(180deg,#1a2028,#0a0d10);border:1px solid rgba(var(--er),0.6);border-radius:4px;box-shadow:0 8px 24px rgba(0,0,0,0.7);max-height:240px;overflow-y:auto;z-index:1000;display:none;padding:4px";
+
+          let isOpen = false;
+          const setOpen = (o) => {
+            isOpen = o;
+            menu.style.display = o ? "block" : "none";
+            arrow.style.transform = o ? "rotate(180deg)" : "rotate(0)";
+            btn.style.borderColor = o ? "var(--amber)" : "rgba(var(--er),0.5)";
+          };
+
+          options.forEach(opt => {
+            const item = document.createElement("div");
+            const isActive = String(opt.v) === String(currentValue);
+            item.style.cssText = `display:flex;align-items:center;justify-content:space-between;padding:9px 12px;font:600 12px var(--ui);letter-spacing:.04em;color:${isActive ? "#fff" : "#cfd6dd"};cursor:pointer;border-radius:3px;transition:background .12s;${isActive ? "background:linear-gradient(90deg,rgba(var(--er),0.4),rgba(var(--er),0.1));border-left:3px solid var(--amber)" : "border-left:3px solid transparent"}`;
+            item.textContent = opt.t;
+            if (isActive) {
+              const check = document.createElement("span");
+              check.style.cssText = "color:var(--amber);font-size:10px;flex:none;margin-left:8px";
+              check.innerHTML = '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+              item.appendChild(check);
+            }
+            item.onmouseenter = () => { if (!isActive) item.style.background = "rgba(255,255,255,0.06)"; };
+            item.onmouseleave = () => { if (!isActive) item.style.background = ""; };
+            item.onclick = (e) => {
+              e.stopPropagation();
+              label.textContent = opt.t;
+              setOpen(false);
+              onChange(opt.v);
+            };
+            menu.appendChild(item);
+          });
+
+          btn.onclick = (e) => {
+            e.stopPropagation();
+            setOpen(!isOpen);
+          };
+
+          const outside = (ev) => {
+            if (!wrap.contains(ev.target)) setOpen(false);
+          };
+          document.addEventListener("click", outside);
+          // Cleanup on re-render
+          wrap.addEventListener("DOMNodeRemoved", () => {
+            document.removeEventListener("click", outside);
+          });
+
+          wrap.appendChild(btn);
+          wrap.appendChild(menu);
+          return wrap;
+        }
+
         function buildSettingsUI() {
           const box = $("setList");
           box.innerHTML = "";
@@ -17491,17 +17635,12 @@ else if (a === "tgt") edTarget = +v;
                 inp.oninput = () => { S[it.k] = parseFloat(inp.value); val.textContent = f(S[it.k]); changed(it.k); };
                 row.appendChild(inp); row.appendChild(val);
               } else if (it.t === "select") {
-                const wrap = document.createElement("div");
-                wrap.style.cssText = "position:relative;flex:0 0 auto";
-                const inp = document.createElement("select");
-                inp.style.cssText = "appearance:none;-webkit-appearance:none;background:linear-gradient(180deg,#161c22,#0a0d10);color:#fff;border:1px solid rgba(var(--er),0.4);padding:6px 32px 6px 12px;font:700 12px var(--ui);outline:none;cursor:pointer;border-radius:3px;min-width:180px";
-                it.o.forEach(([v, t]) => { const o = document.createElement("option"); o.value = v; o.textContent = t; inp.appendChild(o); });
-                inp.value = String(S[it.k]);
-                inp.onchange = () => { S[it.k] = Number(inp.value); changed(it.k); };
-                const arrow = document.createElement("div");
-                arrow.style.cssText = "position:absolute;right:10px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--amber);font-size:10px";
-                arrow.textContent = "▼";
-                wrap.appendChild(inp); wrap.appendChild(arrow); row.appendChild(wrap);
+                const opts = it.o.map(([v, t]) => ({ v, t }));
+                const dd = createCustomDropdown(opts, S[it.k], (newVal) => {
+                  S[it.k] = Number(newVal);
+                  changed(it.k);
+                });
+                row.appendChild(dd);
               } else {
                 const lbl = document.createElement("label");
                 lbl.style.cssText = "position:relative;display:inline-block;width:44px;height:24px;cursor:pointer;flex:0 0 auto";
@@ -18430,12 +18569,14 @@ if (P.veh) {
               );
             }
           }
-          if (P.shake > 0) {
+          if (P.shake > 0 && !S.highFps) {
             P.shake = Math.max(0, P.shake - dt * 2.2);
             const s = P.shake * 0.05;
             camera.position.x += rnd(-s, s);
             camera.position.y += rnd(-s, s);
             camera.rotation.z += rnd(-s, s) * 0.6;
+          } else if (S.highFps) {
+            P.shake = 0;
           }
           if (P.alive && (!P.veh || (P.veh.type === "heli" && P.seat > 0)) && P.slots.length && VM.visible) {
             let id = curId();
@@ -18445,7 +18586,7 @@ if (P.veh) {
             const ud = mdl.userData;
             const w = PW(curId()) || G['knife'];
             let tilt = 0;
-            if (P.reloading) {
+            if (P.reloading && !S.highFps) {
               tilt = animReload(ud, clamp(1 - P.reloadT / w.reload, 0, 1));
               ud.dirty = true;
             } else if (ud.dirty) {
@@ -18454,13 +18595,13 @@ if (P.veh) {
             }
 const E = P.adsE,
   aimFactor = Math.pow(1 - E, 3), // در زوم کامل ≈ صفر
-  ik = aimFactor,
-  bs = aimFactor;
+  ik = S.highFps ? 0 : aimFactor,
+  bs = S.highFps ? 0 : aimFactor;
             const K = clamp(Math.tan((bv * PI) / 360) / 0.7673, 0.45, 1.2);
-            const bob = P.onGround
+            const bob = (P.onGround && !S.highFps)
               ? Math.min(1, Math.hypot(P.vel.x, P.vel.z) / 5)
               : 0;
-P.kick = Math.max(0, P.kick - dt * 9);
+P.kick = S.highFps ? 0 : Math.max(0, P.kick - dt * 9);
 const hip = ud.hip || HIP,
   ay = ud.adsY === undefined ? -0.2 : ud.adsY,
   az = ud.adsZ || -0.42;
@@ -18884,12 +19025,29 @@ function updatePlayer(dt) {
                 P.onGround = true;
               }
               P.sprinting = false;
-              // fire در حین slide ممنوع
-              if (inp.fire) inp.fire = false;
               P.yawVel = 0;
               P.pitchVel = 0;
               P.lastYaw = P.yaw;
               P.lastPitch = P.pitch;
+              
+              // ✅ شلیک در حین اسلاید (مثل COD Mobile)
+              const _canFire = !P.reloading && P.switchT <= 0 && P.throwT <= 0 && !ov;
+              if (_canFire) {
+                const _w = curW();
+                if (P.nadeOut) {
+                  if (inp.fireBuf > 0) {
+                    playerFire();
+                    inp.fireBuf = 0;
+                  }
+                } else if (P.cool <= 0) {
+                  const _want = _w.auto ? inp.fire : inp.fireBuf > 0;
+                  if (_want) {
+                    playerFire();
+                    inp.fireBuf = 0;
+                  } else if (!_w.melee && curA().mag === 0 && curA().res > 0)
+                    startReload();
+                }
+              }
               return; // ✅ خروج از تابع
             }
           }
@@ -20226,6 +20384,12 @@ NET.socket.on('chatMessage', (msg) => {
       $('dmgfx').style.opacity = Math.min(1, 0.5 + ev.amount / 40);
       sfx('hurt');
       vib(30);
+      // ✅ نشانگر جهت تیر در آنلاین
+      const attacker = NET.remotePlayers[ev.attackerId];
+      if (attacker && attacker.mesh && attacker.mesh.root) {
+        P.hitSrc = { x: attacker.mesh.root.position.x, z: attacker.mesh.root.position.z };
+        P.hitT = 1.4;
+      }
     } else if (ev.attackerId === NET.userId) {
       const rp = NET.remotePlayers[ev.victimId];
       if (rp && rp.mesh && rp.mesh.root && rp.mesh.root.visible) {
