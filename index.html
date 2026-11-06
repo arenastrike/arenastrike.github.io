@@ -89,16 +89,25 @@
       #hud {
         z-index: 11;
       }
-      body.layout #score,
-body.layout #dmgnums,
-
-      body.layout #feed,
+      body.layout #dmgnums,
       body.layout #cross,
       body.layout #hm,
       body.layout #dmgfx,
       body.layout #dmgdir,
       body.layout #killcard {
         display: none !important;
+      }
+      body.layout #score, 
+      body.layout #feed,
+      body.layout #mini,
+      body.layout #vitals {
+        display: flex !important;
+        pointer-events: auto !important;
+        z-index: 55 !important;
+        opacity: 1 !important;
+      }
+      body.layout #mini {
+        display: block !important;
       }
       button {
         font-family: var(--ui);
@@ -3638,7 +3647,7 @@ body.killcam #bndBadge {
         const $ = (id) => document.getElementById(id);
         const IS_TOUCH =
           "ontouchstart" in window || navigator.maxTouchPoints > 0;
-        let SERVER_URL = localStorage.getItem("arena_server_url") || "https://arenastike-backend.fly.dev";
+        let SERVER_URL = localStorage.getItem("arena_server_url") || "https://arenastrike.bonto.run";
         const MULTIPLAYER_ENABLED = true;
         const PI = Math.PI;
         const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
@@ -9714,7 +9723,12 @@ if (sc === "sniper") {
   g.add(tube);
   g.add(Cy(0.062, 0.05, 0.052, 0x1a1c20, 0, cy, cz - sLen / 2 - 0.026));
   g.add(Cy(0.05, 0.042, 0.018, 0x1a1c20, 0, cy, cz - sLen / 2 - 0.005));
-  g.add(Cy(0.038, 0.05, 0.042, 0x1a1c20, 0, cy, cz + sLen / 2 + 0.021));
+  const glassSniperB = new THREE.Mesh(
+    new THREE.CircleGeometry(0.038, 28),
+    glassMat(0xffffff, 0.0)
+  );
+  glassSniperB.position.set(0, cy, cz + sLen / 2 + 0.021);
+  g.add(glassSniperB);
   /* turrets */
   g.add(Cy(0.022, 0.022, 0.028, MT, 0, cy + 0.056, cz));
   g.add(Cy(0.016, 0.016, 0.012, 0x0a0c0e, 0, cy + 0.074, cz));
@@ -9741,7 +9755,12 @@ if (sc === "sniper") {
   tube.position.set(0, cy, cz);
   g.add(tube);
   g.add(Cy(0.056, 0.046, 0.044, 0x1a1c20, 0, cy, cz - sLen / 2 - 0.022));
-  g.add(Cy(0.036, 0.046, 0.036, 0x1a1c20, 0, cy, cz + sLen / 2 + 0.018));
+  const glassX6B = new THREE.Mesh(
+    new THREE.CircleGeometry(0.036, 28),
+    glassMat(0xffffff, 0.0)
+  );
+  glassX6B.position.set(0, cy, cz + sLen / 2 + 0.018);
+  g.add(glassX6B);
   g.add(Cy(0.02, 0.02, 0.026, MT, 0, cy + 0.052, cz));
   g.add(Cy(0.018, 0.018, 0.024, MT, 0.05, cy, cz));
   g.add(Cy(0.018, 0.018, 0.024, MT, -0.05, cy, cz));
@@ -9772,7 +9791,12 @@ if (sc === "sniper") {
   tube.position.set(0, cy, cz);
   g.add(tube);
   g.add(Cy(0.048, 0.038, 0.036, 0x1a1c20, 0, cy, cz - sLen / 2 - 0.018));
-  g.add(Cy(0.032, 0.04, 0.03, 0x1a1c20, 0, cy, cz + sLen / 2 + 0.015));
+  const glassDmrB = new THREE.Mesh(
+    new THREE.CircleGeometry(0.032, 28),
+    glassMat(0xffffff, 0.0)
+  );
+  glassDmrB.position.set(0, cy, cz + sLen / 2 + 0.015);
+  g.add(glassDmrB);
   g.add(Cy(0.018, 0.018, 0.024, MT, 0, cy + 0.046, cz));
   g.add(Cy(0.016, 0.016, 0.022, MT, 0.046, cy, cz));
   const glassF = new THREE.Mesh(
@@ -11964,7 +11988,11 @@ $("bMap").innerHTML = '<svg viewBox="0 0 24 24"><path d="M3 6l6-3 6 3 6-3v15l-6 
 
         /* ---- layout editor ---- */
         const LAYOUT_KEY = "arena_layout_v3";
-const LIDS = ["joyBase","bFire","bAds","bStance","bJump","bReload","bNade","bNext","bUse","bHeal","bChute","bPause","bInv","bMap","bLeanL","bLeanR","dock"];
+const LIDS = [
+  "joyBase", "bFire", "bAds", "bStance", "bJump", "bReload", "bNade",
+  "bNext", "bUse", "bChute", "bPause", "bInv", "bMap", "bLeanL", "bLeanR",
+  "dock", "mini", "vitals", "score", "feed"
+];
         const LNAME = {
           joyBase: "MOVE JOYSTICK",
           bFire: "FIRE",
@@ -11975,14 +12003,17 @@ const LIDS = ["joyBase","bFire","bAds","bStance","bJump","bReload","bNade","bNex
           bNade: "GRENADE",
           bNext: "SWAP / TANK MG",
           bUse: "ENTER / LOOT",
-          bHeal: "BANDAGE",
           bChute: "PARACHUTE",
           bPause: "PAUSE",
           dock: "WEAPON BAR",
-bInv: "INVENTORY",
-bMap: "TACTICAL MAP",
-bLeanL: "LEAN LEFT",
-bLeanR: "LEAN RIGHT",
+          bInv: "INVENTORY",
+          bMap: "TACTICAL MAP",
+          bLeanL: "LEAN LEFT",
+          bLeanR: "LEAN RIGHT",
+          mini: "MINIMAP",
+          vitals: "HEALTH & AMMO",
+          score: "SCOREBOARD",
+          feed: "KILL FEED"
         };
         let LAY = {};
         try {
@@ -12001,23 +12032,15 @@ bLeanR: "LEAN RIGHT",
           const c = LAY[id],
             st = el.style;
           if (!c) {
-            [
-              "left",
-              "top",
-              "right",
-              "bottom",
-              "translate",
-              "transform",
-              "opacity",
-            ].forEach((p) => st.removeProperty(p));
+            ["left", "top", "right", "bottom", "transform", "opacity", "translate"].forEach((p) => st.removeProperty(p));
             return;
           }
           st.left = c.x * 100 + "%";
           st.top = c.y * 100 + "%";
           st.right = "auto";
           st.bottom = "auto";
-          st.translate = "-50% -50%";
-          st.transform = "scale(" + c.s + ")";
+          st.translate = "none"; // پاک کردن translate قبلی
+          st.transform = `translate(-50%, -50%) scale(${c.s})`;
           st.opacity = c.o;
         }
         function layEnsure(id) {
@@ -12174,35 +12197,53 @@ bLeanR: "LEAN RIGHT",
           applyLay(laySel);
         };
         $("lbSize").onchange = $("lbOp").onchange = saveLay;
-        $("lbReset").onclick = () => {
-          if (!laySel) return;
+        function bindLBB(id, fn) {
+          const el = $(id);
+          if (!el) return;
+          const handler = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            fn();
+          };
+          el.addEventListener("touchstart", handler, { passive: false });
+          el.addEventListener("click", handler);
+        }
+
+        bindLBB("lbReset", () => {
+          if (!laySel) return toast("SELECT AN ITEM FIRST");
           delete LAY[laySel];
           applyLay(laySel);
           saveLay();
           laySync();
-        };
-        $("lbAll").onclick = () => {
+          toast("ITEM RESET");
+        });
+        bindLBB("lbAll", () => {
           LAY = {};
           LIDS.forEach(applyLay);
           saveLay();
           laySync();
-        };
-        $("lbDone").onclick = () => {
+          toast("ALL RESET");
+        });
+        bindLBB("lbDone", () => {
           saveLay();
           $("layoutBar").classList.remove("show");
           selectLay(null);
           setState(layFrom || "menu");
           showScreen("settings");
-        };
-        $("lbExit").onclick = () => {
+        });
+        bindLBB("lbExit", () => {
           try {
             LAY = JSON.parse(laySnap || "{}") || {};
           } catch (e) {
             LAY = {};
           }
           LIDS.forEach(applyLay);
-          $("lbDone").onclick();
-        };
+          saveLay();
+          $("layoutBar").classList.remove("show");
+          selectLay(null);
+          setState(layFrom || "menu");
+          showScreen("settings");
+        });
         $("btnLayout").textContent = IS_TOUCH
           ? "Customize touch controls"
           : "Key bindings";
@@ -16229,9 +16270,9 @@ if (cache.healing !== P.healing) {
             (!P.veh || (P.veh.type === "heli" && P.seat > 0)) &&
             P.alive &&
             P.slots.length &&
-            isSniperScope &&
+            wNow && wNow.scope === true && 
             !P.reloading &&
-            P.adsE > 0.15
+            P.adsE > 0.5
           );
           if (scoped !== cache.scoped) {
             cache.scoped = scoped;
@@ -16768,27 +16809,18 @@ if (hsc) {
           if (!it) return;
           if (it.slot === "gear") {
             if (it.id === "armor") {
-              if (P.armor >= 100) {
-                toast("ARMOR ALREADY FULL");
-                return;
-              }
+              if (P.armor >= 100) { toast("ARMOR ALREADY FULL"); return; }
               P.armor = Math.min(100, P.armor + it.amount);
               toast("+" + it.amount + " ARMOR");
             } else if (it.id === "bandage") {
-              if (P.bandages >= 9) {
-                toast("BANDAGES FULL");
-                return;
-              }
+              if (P.bandages >= 9) { toast("BANDAGES FULL"); return; }
               P.bandages = Math.min(9, P.bandages + it.amount);
               toast("+" + it.amount + " BANDAGE");
             } else {
               P.slots.forEach((id) => {
                 const w = PW(id);
                 if (w.max)
-                  P.ammo[id].res = Math.min(
-                    w.max,
-                    P.ammo[id].res + (w.id === "rpg" ? 1 : w.mag),
-                  );
+                  P.ammo[id].res = Math.min(w.max, P.ammo[id].res + (w.id === "rpg" ? 1 : w.mag));
               });
               toast("AMMO RESUPPLIED");
             }
@@ -16798,37 +16830,42 @@ if (hsc) {
             updateHUD(0);
             return;
           }
-          const slotName = it.slot,
-            newId = it.id,
-            K = KITS[P.kit];
+
+          const slotName = it.slot, newId = it.id, K = KITS[P.kit];
           if (slotName === "primary") {
-            const old = K.primary;
-            K.primary = newId;
+            const old = P.slots[0];
+            // ✅ فقط اسلحه فعلی بازیکن رو عوض می‌کنیم، نه کیت ذخیره‌شده
+            P.slots[0] = newId;
+            const at = attOf(K, newId);
+            P.W[newId] = effW(newId, at);
+            rebuildGun(newId, at);
+            P.ammo[newId] = { mag: P.W[newId].mag, res: P.W[newId].res };
             const oi = curLoot.items.findIndex((x) => x === it);
             curLoot.items[oi] = { slot: "primary", id: old, name: G[old].name };
             toast("PICKED UP " + G[newId].name);
           } else if (slotName === "secondary") {
-            const old = K.secondary;
-            K.secondary = newId;
+            const old = P.slots[1];
+            P.slots[1] = newId;
+            const at = attOf(K, newId);
+            P.W[newId] = effW(newId, at);
+            rebuildGun(newId, at);
+            P.ammo[newId] = { mag: P.W[newId].mag, res: P.W[newId].res };
             const oi = curLoot.items.findIndex((x) => x === it);
-            curLoot.items[oi] = {
-              slot: "secondary",
-              id: old,
-              name: G[old].name,
-            };
+            curLoot.items[oi] = { slot: "secondary", id: old, name: G[old].name };
             toast("PICKED UP " + G[newId].name);
           } else if (slotName === "knife") {
-            const old = K.melee || "knife";
-            K.melee = newId;
+            const old = P.slots[2];
+            P.slots[2] = newId;
+            const at = attOf(K, newId);
+            P.W[newId] = effW(newId, at);
+            rebuildGun(newId, at);
             const oi = curLoot.items.findIndex((x) => x === it);
             curLoot.items[oi] = { slot: "knife", id: old, name: G[old].name };
             toast("PICKED UP " + G[newId].name);
           }
-          saveKits();
-          buildPlayerWeapons(P.kit, true);
-          P.cur = 0;
-          showModel();
+          // ✅ دیگه saveKits() صدا زده نمیشه
           buildDock();
+          showModel();
           sfx("pickup");
           renderLoot();
           updateHUD(0);
