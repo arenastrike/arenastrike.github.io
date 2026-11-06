@@ -1174,6 +1174,71 @@ cursor: pointer;
       #setList input[type="range"] { -webkit-appearance: none; appearance: none; height: 4px; background: rgba(255,255,255,0.15); border-radius: 2px; outline: none; }
       #setList input[type="range"]::-webkit-slider-runnable-track { height: 4px; background: rgba(255,255,255,0.15); border-radius: 2px; }
 
+      /* ✅ FIX: ساخت اتاق و ستاپ کامل در موبایل (پرتره/لنداسکیپ کوچک) اسکرول‌پذیر بشن */
+      @media (max-width: 900px), (max-height: 640px) {
+        #mpCreateBox, #mpSetupBox {
+          overflow-y: auto !important;
+          -webkit-overflow-scrolling: touch;
+          padding-bottom: 8px !important;
+        }
+        #mpCreateBox .mp-create-wrap,
+        #mpSetupBox .mp-create-wrap {
+          min-height: auto !important;
+          flex: none !important;
+          gap: 6px !important;
+        }
+        #mpCreateBox > .mp-create-wrap > div:nth-child(2) {
+          flex: none !important;
+          padding: 4px 0 !important;
+          gap: 5px !important;
+        }
+        #mpCreateBox .mp-input,
+        #mpSetupBox .mp-input,
+        #mpCreateBox select,
+        #mpSetupBox select {
+          margin: 3px 0 !important;
+          padding: 6px 10px !important;
+          font-size: 12px !important;
+          height: auto !important;
+        }
+        #mpCreateBox label {
+          font-size: 11px !important;
+          margin-top: 4px !important;
+          letter-spacing: .06em !important;
+        }
+        #mpCreateBox .mp-step-head h2,
+        #mpSetupBox .mp-step-head h2 {
+          font-size: 16px !important;
+        }
+        #mpCreateBox .mp-step-head small,
+        #mpSetupBox .mp-step-head small {
+          font-size: 9px !important;
+        }
+        #mpCreateBox > .mp-create-wrap > div:last-child {
+          flex: none !important;
+          margin-top: 8px !important;
+          padding-top: 6px !important;
+          position: sticky;
+          bottom: 0;
+          background: rgba(3,5,7,0.95);
+          z-index: 5;
+        }
+        #mpCreateBox > .mp-create-wrap > div:last-child .btn {
+          padding: 8px 14px !important;
+          font-size: 12px !important;
+          margin: 0 !important;
+        }
+        /* Auth هم اسکرول‌پذیر بشه */
+        #mpAuthBox {
+          overflow-y: auto !important;
+          -webkit-overflow-scrolling: touch;
+          max-height: 100% !important;
+          padding: 6px 12px !important;
+        }
+        #mpAuthBox h2 { font-size: 18px !important; margin-bottom: 10px !important; }
+        #mpAuthBox .mp-input { margin: 4px 0 !important; padding: 7px 10px !important; font-size: 12px !important; }
+      }
+
       @media (max-width: 800px) {
         .mp-body { overflow-y: auto; padding-bottom: 20px; }
         #mpCreateBox, #mpSetupBox { overflow-y: auto; }
@@ -4132,8 +4197,10 @@ sprint: "ControlLeft",
         );
         function checkOrient() {
           const bad = IS_TOUCH && innerHeight > innerWidth;
-          $("rotate").classList.toggle("show", bad);
-          if (bad && state === "playing") pauseGame();
+          // ✅ هشدار چرخش فقط موقع بازی نشون داده بشه (نه توی منو/لابی)
+          const blockInGame = bad && (state === "playing" || state === "paused");
+          $("rotate").classList.toggle("show", blockInGame);
+          if (blockInGame && state === "playing") pauseGame();
         }
         addEventListener("resize", () => {
           try { if (podActive) podFit(); } catch (e) {}
@@ -16167,7 +16234,11 @@ if (cache.healing !== P.healing) {
           setT("ammoRes", res);
           setT("wName", wn);
           $("ammoRow").classList.toggle("low", low);
-          if (MATCH.mode === "ffa") {
+          // ✅ FIX: در آنلاین، اسکور HUD توسط applyMpSnapshot از داده سرور مدیریت می‌شه
+          // اینجا نباید بازنویسی بشه — وگرنه هر ثانیه صفر می‌شه
+          if (NET.mode === 'playing') {
+            // هیچ‌کاری نکن — applyMpSnapshot انجامش می‌ده
+          } else if (MATCH.mode === "ffa") {
             const th = MATCH.ffaKills || 20;
             let lk = P.kills,
               ln = "YOU";
@@ -16479,6 +16550,58 @@ if (hsc) {
           if (state === "playing" && P.alive) lockPointer();
         }
         function renderScoreboard() {
+          // ✅ FIX: در آنلاین، از داده‌ی سرور (NET.lastSnapshot) استفاده کن
+          if (NET.mode === 'playing' && NET.lastSnapshot && NET.lastSnapshot.players) {
+            const sp = NET.lastSnapshot.players;
+            const roomMode = (NET.currentRoom && NET.currentRoom.mode) || 'tdm';
+            const myId = String(NET.userId);
+
+            /* ===== FFA ===== */
+            if (roomMode === 'ffa') {
+              const sorted = sp.slice().sort(
+                (a, b) => (b.kills || 0) - (a.kills || 0) || (a.deaths || 0) - (b.deaths || 0)
+              );
+              let h = '<div class="sbTeam" style="color:#ffb890;background:rgba(255,122,24,.16);border-left:3px solid var(--ember)">FREE FOR ALL</div>';
+              h += '<div class="sbRow sbHead"><span>#</span><span>NAME</span><span class="r">KILLS</span><span class="r">DEATHS</span><span class="r">STATUS</span></div>';
+              sorted.forEach((r, i) => {
+                const isMe = String(r.userId) === myId;
+                const botTag = r.isBot ? ' <span style="color:var(--dim);font-size:10px">[BOT]</span>' : '';
+                const alive = r.alive
+                  ? '<span style="color:#7ed321">●</span>'
+                  : '<span style="color:#ff5a4a">✕</span>';
+                h += `<div class="sbRow ${isMe ? 'me' : ''}"><span>${i + 1}</span><span>${esc(r.username)}${isMe ? ' (YOU)' : ''}${botTag}</span><span class="r">${r.kills || 0}</span><span class="r">${r.deaths || 0}</span><span class="r">${alive}</span></div>`;
+              });
+              $("sbBody").innerHTML = h;
+              return;
+            }
+
+            /* ===== TDM ===== */
+            const scores = NET.lastSnapshot.scores || {};
+            let h = '';
+            for (const t of [0, 1]) {
+              const list = sp
+                .filter(r => r.team === t)
+                .sort((a, b) => (b.kills || 0) - (a.kills || 0) || (a.deaths || 0) - (b.deaths || 0));
+              const score = t === 0 ? (scores.blue || 0) : (scores.red || 0);
+              h += `<div class="sbTeam ${t === 0 ? 'b' : 'r'}">${teamName(t)} TEAM — ${score} KILLS</div>`;
+              h += '<div class="sbRow sbHead"><span>#</span><span>NAME</span><span class="r">KILLS</span><span class="r">DEATHS</span><span class="r">STATUS</span></div>';
+              if (list.length === 0) {
+                h += '<div class="sbRow" style="opacity:.5"><span>—</span><span>No players</span><span class="r">—</span><span class="r">—</span><span class="r">—</span></div>';
+              }
+              list.forEach((r, i) => {
+                const isMe = String(r.userId) === myId;
+                const botTag = r.isBot ? ' <span style="color:var(--dim);font-size:10px">[BOT]</span>' : '';
+                const alive = r.alive
+                  ? '<span style="color:#7ed321">●</span>'
+                  : '<span style="color:#ff5a4a">✕</span>';
+                h += `<div class="sbRow ${isMe ? 'me' : ''}"><span>${i + 1}</span><span>${esc(r.username)}${isMe ? ' (YOU)' : ''}${botTag}</span><span class="r">${r.kills || 0}</span><span class="r">${r.deaths || 0}</span><span class="r">${alive}</span></div>`;
+              });
+            }
+            $("sbBody").innerHTML = h;
+            return;
+          }
+
+          /* ===== حالت آفلاین (بدون تغییر) ===== */
           const rows = [];
           if (MATCH.mode === "ffa") {
             const all = [
@@ -19444,23 +19567,26 @@ const sprint =
           }
 
           if (state === "playing" && !matchOver) {
-if (matchT !== Infinity) {
-  matchT -= dt;
-  if (matchT <= 0) {
-    matchT = 0;
-    if (MATCH.mode === "ffa") {
-      const all = [
-        { name: "YOU", kills: P.kills, me: 1 },
-        ...bots.map((b) => ({ name: b.name, kills: b.kills, me: 0 })),
-      ];
-      all.sort((a, b) => b.kills - a.kills);
-      const winner = all[0].me ? P : bots.find((b) => b.name === all[0].name);
-      endFFA(winner || P);
-    } else {
-      endMatch();
-    }
-  }
-}
+            if (matchT !== Infinity) {
+              matchT -= dt;
+              if (matchT <= 0) {
+                matchT = 0;
+                // ✅ FIX: در آنلاین، پایان مچ فقط از سرور میاد (رویداد matchEnd)
+                if (NET.mode === 'playing') {
+                  // صبر کن تا سرور matchEnd بفرسته
+                } else if (MATCH.mode === "ffa") {
+                  const all = [
+                    { name: "YOU", kills: P.kills, me: 1 },
+                    ...bots.map((b) => ({ name: b.name, kills: b.kills, me: 0 })),
+                  ];
+                  all.sort((a, b) => b.kills - a.kills);
+                  const winner = all[0].me ? P : bots.find((b) => b.name === all[0].name);
+                  endFFA(winner || P);
+                } else {
+                  endMatch();
+                }
+              }
+            }
           }
           const live = state === "playing" || state === "deploy";
           if (live) {
@@ -19508,8 +19634,8 @@ if (matchT !== Infinity) {
                   x: P.pos.x, y: P.pos.y, z: P.pos.z,
                   yaw: P.yaw, pitch: P.pitch,
                   forward: inp.kf, right: inp.kr,
-                  up: (keys[KB.jump] || keys["Space"]) ? 1 : 0,
-                  down: (keys[KB.crouch] || keys["ShiftLeft"]) ? 1 : 0,
+                  up: (keys[KB.jump] || keys["Space"] || inp.up) ? 1 : 0,
+                  down: (keys[KB.crouch] || keys["ShiftLeft"] || inp.down) ? 1 : 0,
                   stance: P.stance,
                   sliding: P.sliding,
                   lean: P.leanA,
@@ -19517,7 +19643,7 @@ if (matchT !== Infinity) {
                   ads: P.zoom,
                   inVehicle: !!P.veh,
                   weapon: P.slots[P.cur] || 'ak47',
-                  shoot: inp.fire,
+                  shoot: (inp.fire || inp.fireBuf > 0) && !P.reloading && P.switchT <= 0 && P.throwT <= 0,
                   reload: P.reloading,
                   switchSlot: P.cur === 0 ? 'primary' : P.cur === 1 ? 'secondary' : 'melee',
                   heal: P.healing,
@@ -19527,12 +19653,18 @@ if (matchT !== Infinity) {
                   jumpT: P.onGround ? 0 : Math.min(1, Math.max(0, (P.vy + 7) / 14)),
                 });
                 inp.fireBuf = 0;
-                // remote players: interpolate position
+                // ✅ FIX #4: interpolation سریع‌تر + rotation smooth (بدون snap موقع عبور از ±π)
                 for (const uid in NET.remotePlayers) {
                   const rp = NET.remotePlayers[uid];
                   if (!rp.mesh || !rp.mesh.root) continue;
-                  rp.mesh.root.position.lerp(rp.targetPos, Math.min(1, dt * 12));
-                  rp.mesh.root.rotation.y = rp.targetYaw;
+                  // exponential smoothing — حدود 33ms time constant، مستقل از framerate
+                  const k = 1 - Math.exp(-28 * dt);
+                  rp.mesh.root.position.lerp(rp.targetPos, k);
+                  // rotate smooth با بررسی wrap
+                  let dyaw = rp.targetYaw - rp.mesh.root.rotation.y;
+                  while (dyaw >  PI) dyaw -= 2 * PI;
+                  while (dyaw < -PI) dyaw += 2 * PI;
+                  rp.mesh.root.rotation.y += dyaw * k;
                   animateRemotePlayer(rp, dt);
                 }
               }
@@ -20318,7 +20450,7 @@ NET.socket.on('chatMessage', (msg) => {
       sfx('mg', { x: o.x, z: o.z });
     }
     // hit effects
-    if (r && r.hit && r.victimId === NET.userId) {
+    if (r && r.hit && String(r.victimId) === String(NET.userId)) {
       // ما خوردیم
       $('dmgfx').style.opacity = Math.min(1, 0.7);
       sfx('hurt');
@@ -20360,7 +20492,7 @@ NET.socket.on('chatMessage', (msg) => {
   });
 
   NET.socket.on('vehicleEntered', ({ vehicleId, userId, seat }) => {
-    if (userId === NET.userId) {
+    if (String(userId) === String(NET.userId)) {
       const lv = NET.vehicleMap[vehicleId];
       if (lv) {
         P.veh = lv;
@@ -20397,7 +20529,7 @@ NET.socket.on('chatMessage', (msg) => {
     }
   });
   NET.socket.on('kill', (ev) => {
-    if (ev.killerId === NET.userId) {
+    if (String(ev.killerId) === String(NET.userId)) {
       // ── KILL TYPE detection (same as damageBot) ──
       let killType = null;
       const _w = G[ev.weapon] || {};
@@ -20425,7 +20557,7 @@ NET.socket.on('chatMessage', (msg) => {
         pos.y += 1.8;
         spawnDmgNum(pos, 999, true, ev.headshot);
       }
-    } else if (ev.victimId === NET.userId) {
+    } else if (String(ev.victimId) === String(NET.userId)) {
       showKillCard(ev.killerName, !!ev.headshot, true);
 
     }
@@ -20438,7 +20570,7 @@ NET.socket.on('chatMessage', (msg) => {
     );
   });
   NET.socket.on('damage', (ev) => {
-    if (ev.victimId === NET.userId) {
+    if (String(ev.victimId) === String(NET.userId)) {
       P.hp = ev.hp;
       $('dmgfx').style.opacity = Math.min(1, 0.5 + ev.amount / 40);
       sfx('hurt');
@@ -20449,7 +20581,7 @@ NET.socket.on('chatMessage', (msg) => {
         P.hitSrc = { x: attacker.mesh.root.position.x, z: attacker.mesh.root.position.z };
         P.hitT = 1.4;
       }
-    } else if (ev.attackerId === NET.userId) {
+    } else if (String(ev.attackerId) === String(NET.userId)) {
       const rp = NET.remotePlayers[ev.victimId];
       if (rp && rp.mesh && rp.mesh.root && rp.mesh.root.visible) {
         const pos = rp.mesh.root.position.clone();
@@ -20476,7 +20608,7 @@ NET.socket.on('chatMessage', (msg) => {
     endMpMatch(info);
   });
   NET.socket.on('playerRespawned', ({ userId }) => {
-    if (userId === NET.userId) {
+    if (String(userId) === String(NET.userId)) {
       // our own respawn
     }
   });
@@ -21004,13 +21136,14 @@ function applyMpSnapshot(snap) {
     matchT = snap.time;
   }
   // Update remote players
+  // ✅ FIX #5: مقایسه‌ی امن با String + اسپاون فوری در جای درست
   for (const sp of snap.players) {
-    if (sp.userId === NET.userId) {
+    const isSelf = String(sp.userId) === String(NET.userId);
+    if (isSelf) {
       P.team = sp.team;
       P.kills = sp.kills || 0;
       P.deaths = sp.deaths || 0;
       if (sp.alive && !P.alive) {
-        // ✅ سرور ما رو respawn کرده — از موقعیت سرور استفاده کن
         respawnFromServer(sp);
       } else if (sp.alive && P.alive) {
         P.hp = sp.hp;
@@ -21020,14 +21153,19 @@ function applyMpSnapshot(snap) {
       }
       continue;
     }
-    let rp = NET.remotePlayers[sp.userId];
+    const uidKey = String(sp.userId);
+    let rp = NET.remotePlayers[uidKey];
     if (!rp) {
       // create new remote player
       const mesh = buildBotMesh(sp.team);
+      // ✅ موقعیت و جهت اولیه رو فوراً ست کن تا از (0,0,0) اسپاون نکنه
+      mesh.root.position.set(sp.x, sp.y, sp.z);
+      mesh.root.rotation.y = sp.yaw;
       scene.add(mesh.root);
       const nameSprite = makeNameSprite(sp.username, sp.team);
+      nameSprite.position.set(sp.x, sp.y + 2.3, sp.z);
       scene.add(nameSprite);
-      rp = NET.remotePlayers[sp.userId] = {
+      rp = NET.remotePlayers[uidKey] = {
         mesh, nameSprite,
         targetPos: new THREE.Vector3(sp.x, sp.y, sp.z),
         targetYaw: sp.yaw,
@@ -21173,9 +21311,10 @@ function applyMpSnapshot(snap) {
     }
   }
   // Remove players not in snapshot
-  const seen = new Set(snap.players.map(p => p.userId));
+  // ✅ FIX #5: from now on keys are strings
+  const seen = new Set(snap.players.map(p => String(p.userId)));
   for (const uid in NET.remotePlayers) {
-    if (!seen.has(+uid) && !seen.has(uid)) {
+    if (!seen.has(uid)) {
       const rp = NET.remotePlayers[uid];
       if (rp.mesh && rp.mesh.root) scene.remove(rp.mesh.root);
       if (rp.nameSprite) scene.remove(rp.nameSprite);
@@ -21224,7 +21363,7 @@ function applyMpSnapshot(snap) {
 
       // اگه من توش نشستم، موقعیت بازیکن رو smooth دنبال وسیله کن
       if (vd.seats && NET.userId !== undefined) {
-        const mySeat = vd.seats.indexOf(NET.userId);
+        const mySeat = vd.seats.findIndex(s => s !== null && String(s) === String(NET.userId));
         if (mySeat >= 0) {
           const justGot = (P.veh !== lv);
           P.veh = lv;
