@@ -1149,26 +1149,32 @@ cursor: pointer;
       
       /* ===== MOBILE SCALING ===== */
       @media (max-width: 800px) {
-        .mp-body, .mp-lobby-grid, .mp-room-body { gap: 8px; }
-        .mp-head h1 { font-size: 20px !important; }
-        .mp-input { padding: 6px 10px; font-size: 13px; }
-        .btn { padding: 8px 16px !important; font-size: 14px !important; }
-        #mpAuthBox { margin-top: 5px; }
-        #mpAuthBox h2 { font-size: 24px; margin-bottom: 10px; }
+        .mp-body, .mp-lobby-grid, .mp-room-body { gap: 6px; }
+        .mp-head h1 { font-size: 18px !important; }
+        .mp-input { padding: 4px 8px; font-size: 12px; margin: 3px 0; }
+        .btn { padding: 6px 10px !important; font-size: 12px !important; margin-top: 4px !important; }
+        
+        /* فیکس باکس لاگین و دکمه‌ها */
+        #mpAuthBox { margin-top: 0; padding: 5px 0; width: 92%; }
+        #mpAuthBox h2 { font-size: 18px; margin-bottom: 6px; }
+        #mpAuthMsg { font-size: 11px; margin: 2px 0; min-height: 14px; }
+        #mpLoginBtn { width: calc(50% - 4px); margin-right: 6px; display: inline-block; }
+        #mpRegisterBtn { width: calc(50% - 4px); display: inline-block; }
+
         .mp-create-wrap, .mp-setup-body { flex-direction: column; overflow-y: auto; }
         .mp-modes-col { width: 100%; height: auto; flex-direction: row; flex-wrap: wrap; }
-        .mp-mode-card { flex: 1 1 45%; padding: 8px; }
-        .mp-cfg-col { padding: 8px; }
+        .mp-mode-card { flex: 1 1 45%; padding: 6px; }
+        .mp-cfg-col { padding: 6px; }
         
         /* Scale down HUD */
-        #vitals { transform: translateX(-50%) scale(0.8); bottom: 45px; }
-        #dock { transform: translateX(-50%) scale(0.8); bottom: 5px; }
-        #score { transform: translateX(-50%) scale(0.85); top: 0; }
-        #mini { width: 90px; height: 90px; }
-        #feed { width: 200px; font-size: 11px; top: 35px; }
-        .slot { width: 46px; height: 38px; }
-        .tbtn { transform: scale(0.85); }
-        #bFire { transform: scale(0.85); width: 80px; height: 80px; }
+        #vitals { transform: translateX(-50%) scale(0.65); bottom: 30px; }
+        #dock { transform: translateX(-50%) scale(0.6); bottom: 0; }
+        #score { transform: translateX(-50%) scale(0.75); top: 0; }
+        #mini { width: 80px; height: 80px; }
+        #feed { width: 180px; font-size: 10px; top: 30px; }
+        .slot { width: 42px; height: 34px; }
+        .tbtn { transform: scale(0.78); }
+        #bFire { transform: scale(0.78); width: 75px; height: 75px; }
       }
       #splash {
         align-items: center;
@@ -19779,7 +19785,16 @@ function renderMpSetup() {
 function connectMpSocket(isAutoLogin = false) {
   if (NET.socket) NET.socket.disconnect();
   // ✅ مجبور کردن سوکت به استفاده از WebSocket تا ارور 400 و کندی رفع بشه
-  NET.socket = io(SERVER_URL, { auth: { token: NET.token }, transports: ['websocket'] });
+  NET.socket = io(SERVER_URL, { 
+    auth: { token: NET.token },
+    transports: ['polling', 'websocket'], // اول polling بعد ارتقا به websocket
+    tryAllTransports: true,
+    timeout: 20000,                      // ۲۰ ثانیه فرصت برای اتصال اول
+    reconnection: true,
+    reconnectionAttempts: 10,            // ۱۰ بار تلاش مجدد
+    reconnectionDelay: 1000,             // ۱ ثانیه صبر بین تلاش‌ها
+    reconnectionDelayMax: 5000,
+  });
   
   NET.socket.on('connect', () => {
     console.log('[MP] Connected');
