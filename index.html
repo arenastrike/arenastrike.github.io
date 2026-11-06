@@ -1175,9 +1175,15 @@ cursor: pointer;
       #setList input[type="range"]::-webkit-slider-runnable-track { height: 4px; background: rgba(255,255,255,0.15); border-radius: 2px; }
 
       @media (max-width: 800px) {
-        .mp-body, .mp-lobby-grid, .mp-room-body { gap: 4px; }
+        .mp-body { overflow-y: auto; padding-bottom: 20px; }
+        #mpCreateBox, #mpSetupBox { overflow-y: auto; }
+        .mp-room-body { gap: 8px; }
         .mp-head h1 { font-size: 18px !important; }
         .mp-input { padding: 5px 8px; font-size: 12px; margin: 3px 0; }
+        .mp-room-chat { width: 100% !important; height: 200px; }
+        .mp-room-body { flex-direction: column; }
+        .mp-room-left { flex: none; height: auto; }
+        .mp-teams-col { max-height: 250px; }
         .btn { padding: 6px 10px !important; font-size: 12px !important; margin-top: 4px !important; }
         #mpAuthBox { margin-top: 0; padding: 4px 0; width: 94%; }
         #mpAuthBox h2 { font-size: 16px; margin-bottom: 4px; }
@@ -2897,13 +2903,20 @@ body.layout #bndBadge {
   gap: 12px;
   min-height: 0;
 }
-.mp-teams-col {
+.mp-room-left {
   flex: 1.5;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.mp-teams-col {
+  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 10px;
   min-width: 0;
   overflow-y: auto;
+  padding-bottom: 8px;
 }
 .mp-team-block {
   background: rgba(0,0,0,0.35);
@@ -3004,10 +3017,14 @@ body.layout #bndBadge {
 .mp-room-foot {
   display: flex;
   gap: 8px;
-  justify-content: flex-end;
-  padding-top: 6px;
   flex: none;
-  flex-wrap: wrap;
+  margin-top: 8px;
+}
+.mp-room-foot .btn {
+  margin: 0 !important;
+  flex: 1;
+  text-align: center;
+  padding: 10px 5px !important;
 }
 .mp-ready-btn {
   background: linear-gradient(90deg, #7ed321, #5ea817) !important;
@@ -3404,7 +3421,14 @@ body.killcam #bndBadge {
             <div class="mp-room-meta" id="mpRoomMeta"></div>
           </div>
           <div class="mp-room-body">
-            <div class="mp-teams-col" id="mpTeamsCol"></div>
+            <div class="mp-room-left">
+              <div class="mp-teams-col" id="mpTeamsCol"></div>
+              <div class="mp-room-foot">
+                <button class="btn" id="mpLeaveRoom">LEAVE</button>
+                <button class="btn mp-ready-btn" id="mpReadyBtn" style="display:none">READY</button>
+                <button class="btn mp-start-btn dis" id="mpStartGameBtn" style="display:none">START GAME</button>
+              </div>
+            </div>
             <div class="mp-room-chat">
               <div style="font:700 11px var(--ui);letter-spacing:.22em;color:var(--ember);margin-bottom:4px">ROOM CHAT</div>
               <div class="mp-chat-msgs" id="mpRoomChatMsgs"></div>
@@ -3413,12 +3437,6 @@ body.killcam #bndBadge {
                 <button class="btn" id="mpRoomChatSend">Send</button>
               </div>
             </div>
-          </div>
-          <div class="mp-room-foot">
-                        <button class="btn" id="mpVoiceBtn"><svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:currentColor;vertical-align:middle;margin-right:6px"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M9 21h6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>VOICE</button>
-            <button class="btn" id="mpLeaveRoom">LEAVE</button>
-            <button class="btn mp-ready-btn" id="mpReadyBtn" style="display:none">READY</button>
-            <button class="btn mp-start-btn dis" id="mpStartGameBtn" style="display:none">START GAME</button>
           </div>
         </div>
 
@@ -19870,23 +19888,30 @@ function showMpRoom(room) {
   const mapTxt = mapId.toUpperCase();
   $mp('mpRoomMeta').innerHTML = `<b>${modeTxt}</b> · ${mapTxt} · ID: <b>${room.id}</b>`;
   renderMpPlayers();
-  const me = room.players.find(p => p.userId === NET.userId);
+  
+  // ✅ استفاده از String برای جلوگیری از باگ Number vs String
+  const me = room.players.find(p => String(p.userId) === String(NET.userId));
   const isOwner = me && me.isOwner;
   const readyBtn = $mp('mpReadyBtn');
   const startBtn = $mp('mpStartGameBtn');
+  
   if (isOwner) {
-    readyBtn.style.display = 'none';
-    startBtn.style.display = 'inline-block';
-    const t0 = room.players.filter(p => p.team === 0).length;
-    const t1 = room.players.filter(p => p.team === 1).length;
-    const allReady = room.players.every(p => p.ready || p.isOwner);
-    const canStart = room.players.length >= 2 && allReady && (room.mode !== 'tdm' || (t0 >= 1 && t1 >= 1));
-    startBtn.classList.toggle('dis', !canStart);
+    if (readyBtn) readyBtn.style.display = 'none';
+    if (startBtn) {
+      startBtn.style.display = 'inline-block';
+      const t0 = room.players.filter(p => p.team === 0).length;
+      const t1 = room.players.filter(p => p.team === 1).length;
+      const allReady = room.players.every(p => p.ready || p.isOwner);
+      const canStart = room.players.length >= 2 && allReady && (room.mode !== 'tdm' || (t0 >= 1 && t1 >= 1));
+      startBtn.classList.toggle('dis', !canStart);
+    }
   } else {
-    readyBtn.style.display = 'inline-block';
-    startBtn.style.display = 'none';
-    readyBtn.classList.toggle('on', !!(me && me.ready));
-    readyBtn.textContent = (me && me.ready) ? '✓ READY' : 'READY';
+    if (readyBtn) {
+      readyBtn.style.display = 'inline-block';
+      readyBtn.classList.toggle('on', !!(me && me.ready));
+      readyBtn.textContent = (me && me.ready) ? '✓ READY' : 'READY';
+    }
+    if (startBtn) startBtn.style.display = 'none';
   }
 }
 
@@ -21441,7 +21466,6 @@ const sendRoom = () => {
 $mp('mpRoomChatSend').onclick = sendRoom;
 $mp('mpRoomChatInput').onkeydown = (e) => { if (e.key === 'Enter') sendRoom(); };
 
-$mp('mpVoiceBtn').onclick = () => toggleVoice();
 $mp('mpBackToMenu').onclick = () => {
   setState('menu'); showScreen('menu');
 };
